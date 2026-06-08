@@ -1,0 +1,38 @@
+# ============================================================
+# Entorno de pruebas XWiki para V&V de la HU "Comentarios"
+# 2 servicios: xwiki (app) + postgres (base de datos)
+# Arranca con:  docker compose up -d
+# App en:       http://localhost:8080
+# ============================================================
+services:
+  xwiki:
+    image: xwiki:stable-postgres-tomcat
+    container_name: xwiki-vyv
+    depends_on:
+      - xwiki-db
+    ports:
+      - "8080:8080"
+    environment:
+      - DB_USER=xwiki
+      - DB_PASSWORD=xwiki
+      - DB_DATABASE=xwiki
+      - DB_HOST=xwiki-db
+    volumes:
+      - xwiki-data:/usr/local/xwiki
+    restart: unless-stopped
+
+  xwiki-db:
+    image: postgres:16
+    container_name: xwiki-db-vyv
+    environment:
+      - POSTGRES_USER=xwiki
+      - POSTGRES_PASSWORD=xwiki
+      - POSTGRES_DB=xwiki
+      - POSTGRES_INITDB_ARGS=--encoding=UTF8
+    volumes:
+      - xwiki-db-data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  xwiki-data:
+  xwiki-db-data:

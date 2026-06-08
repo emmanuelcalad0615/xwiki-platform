@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.vyv</groupId>
+  <artifactId>comentarios-modulo-real</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>V&amp;V - Pruebas unitarias contra el modulo real de XWiki (release 18.4.0)</name>
+  <description>
+    Ejecuta las pruebas unitarias reales (CommentsResourceImpl, CommentResourceImpl,
+    CommentsVersionResourceImpl, CommentVersionResourceImpl) dependiendo del artefacto
+    release ya compilado de XWiki, sin tener que construir todo el monorepo.
+  </description>
+
+  <properties>
+    <maven.compiler.release>17</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <xwiki.version>18.4.0</xwiki.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>xwiki-public</id>
+      <url>https://nexus.xwiki.org/nexus/content/groups/public/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>xwiki-public-plugins</id>
+      <url>https://nexus.xwiki.org/nexus/content/groups/public/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencies>
+    <!-- Codigo real bajo prueba (clases de comentarios ya compiladas) -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-rest-server</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
+
+    <!-- Framework de test por componentes de XWiki: @ComponentTest, @InjectMockComponents -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-tool-test-component</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- JUnit 5 + Mockito los aporta xwiki-commons-tool-test-component en versiones
+         alineadas; no los fijamos aqui para evitar conflictos (OutputDirectoryCreator). -->
+
+    <!-- FieldUtils para inyectar campos protegidos -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.14.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Forzar byte-buddy reciente: el que trae XWiki (1.12.18) no soporta JDK 21
+         y Mockito falla con "Unknown Java version: 0". -->
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <version>1.15.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <version>1.15.11</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Implementacion JAX-RS (RuntimeDelegate) para construir Response/WebApplicationException
+         en las pruebas; en produccion la aporta el servidor. -->
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+      <version>2.41</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- jersey-common expulsa jakarta.annotation-api; el framework de componentes de
+         XWiki necesita jakarta.annotation.Priority, asi que lo restauramos explicito. -->
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>2.1.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+      </plugin>
+    </plugins>
+  </build>
+</project>

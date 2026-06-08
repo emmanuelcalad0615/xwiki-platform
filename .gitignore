@@ -76,3 +76,9 @@ xwiki-platform-core/xwiki-platform-web/xwiki-platform-web-templates/src/main/res
 ## Node specific
 node_modules/
 .nx/
+vyv-comentarios_
+pruebas-caja-negra.md
+pruebas-unitarias-backend.md
+pruebas-unitarias-frontend.md
+tablas-de-caminos.md
+README_.md
