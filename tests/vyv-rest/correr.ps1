@@ -26,6 +26,13 @@ param(
 
 $ErrorActionPreference = "Stop"
 
+# --- Java 21 (requerido por XWiki) ---
+$java21 = "C:\Program Files\Eclipse Adoptium\jdk-21.0.11.10-hotspot"
+if (Test-Path $java21) {
+    $env:JAVA_HOME = $java21
+    $env:PATH = "$java21\bin;$env:PATH"
+}
+
 # --- Rutas derivadas de la ubicacion del script (portables) ---
 $here        = $PSScriptRoot
 $repo        = (Resolve-Path "$here\..\..").Path          # .../xwiki-platform
@@ -35,9 +42,12 @@ $modulo      = Join-Path $worktree "xwiki-platform-core\xwiki-platform-rest\xwik
 # Arbol de tests (fuente de verdad en tu repo) y su destino en el worktree
 $origenTree  = Join-Path $here   "proyecto-modulo-real\src\test\java"
 $destinoTree = Join-Path $modulo "src\test\java"
-# Carpeta de TU funcionalidad (comentarios)
+# Carpeta de funcionalidad (comentarios y pages)
 $origenMia   = Join-Path $origenTree  "org\xwiki\rest\internal\resources\comments"
 $destinoMia  = Join-Path $destinoTree "org\xwiki\rest\internal\resources\comments"
+
+$origenPages   = Join-Path $origenTree  "org\xwiki\rest\internal\resources\pages"
+$destinoPages  = Join-Path $destinoTree "org\xwiki\rest\internal\resources\pages"
 
 # --- Validaciones ---
 if (-not (Test-Path $modulo)) { throw "Falta el worktree xwiki-184. Corre primero:  .\setup.ps1" }
@@ -50,12 +60,19 @@ if ($modo -eq "equipo") {
   Copy-Item "$origenTree\*" $destinoTree -Recurse -Force
 }
 else {
-  Write-Host "==> Sincronizando tus tests (comentarios) a xwiki-184..." -ForegroundColor Cyan
-  if (-not (Test-Path $origenMia)) { throw "No existe el origen de tests: $origenMia" }
-  New-Item -ItemType Directory -Force -Path $destinoMia | Out-Null
-  Copy-Item "$origenMia\*.java" $destinoMia -Force
+  Write-Host "==> Sincronizando tus tests a xwiki-184..." -ForegroundColor Cyan
+  
+  if (Test-Path $origenMia) {
+      New-Item -ItemType Directory -Force -Path $destinoMia | Out-Null
+      Copy-Item "$origenMia\*.java" $destinoMia -Force
+  }
+  
+  if (Test-Path $origenPages) {
+      New-Item -ItemType Directory -Force -Path $destinoPages | Out-Null
+      Copy-Item "$origenPages\*.java" $destinoPages -Force
+  }
+  Write-Host "    OK" -ForegroundColor Green
 }
-Write-Host "    OK" -ForegroundColor Green
 
 # --- 2. Ejecutar ---
 $env:MAVEN_OPTS = "-Xmx2g"
@@ -96,6 +113,6 @@ switch ($modo) {
   }
   default {
     Write-Host "==> Corriendo tus tests..." -ForegroundColor Cyan
-    mvn test "-Dtest=Comment*ResourceImplTest"
+    mvn test "-Dtest=Comment*ResourceImplTest,PageTagsResourceImpl*Test"
   }
 }
