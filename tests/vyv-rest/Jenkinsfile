@@ -65,9 +65,10 @@ pipeline {
                       git fetch --depth 1 https://github.com/xwiki/xwiki-platform.git "refs/tags/${XWIKI_TAG}:refs/tags/${XWIKI_TAG}"
                     fi
                     # Worktree limpio
+                    git worktree remove --force "$WORKTREE" || true
                     git worktree prune || true
                     rm -rf "$WORKTREE" || true
-                    git worktree add "$WORKTREE" "$XWIKI_TAG"
+                    git worktree add -f "$WORKTREE" "$XWIKI_TAG"
                 '''
             }
         }
