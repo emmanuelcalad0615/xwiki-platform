@@ -9,7 +9,8 @@
  * Requisitos:
  *   - XWiki en http://localhost:8080 (docker compose up -d, flavor instalado)
  *   - npm install
- *   - API key del modelo: OPENAI_API_KEY
+ *   - API key del modelo: GROQ_API_KEY (gratis, Llama) u OPENAI_API_KEY.
+ *     PowerShell:  $env:GROQ_API_KEY = "gsk_..."   (NUNCA commitear la key)
  *
  * Ejecutar:  npm run verificar
  */
@@ -51,7 +52,17 @@ async function limpiarDatos() {
   await fetch(URL_PAGINA, { method: 'DELETE', headers: { Authorization: auth } });
 }
 
-const stagehand = new Stagehand({ env: 'LOCAL', verbose: 1 });
+// Groq expone API compatible con OpenAI; si hay GROQ_API_KEY se usa su modelo Llama.
+const stagehand = new Stagehand(
+  process.env.GROQ_API_KEY
+    ? {
+        env: 'LOCAL',
+        verbose: 1,
+        modelName: 'groq/llama-3.3-70b-versatile',
+        modelClientOptions: { apiKey: process.env.GROQ_API_KEY }
+      }
+    : { env: 'LOCAL', verbose: 1 }
+);
 
 try {
   await prepararDatos();

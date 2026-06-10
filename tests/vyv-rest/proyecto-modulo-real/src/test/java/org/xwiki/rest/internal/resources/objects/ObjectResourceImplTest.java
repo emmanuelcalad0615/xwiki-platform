@@ -13,8 +13,9 @@
  *  - MOCK  : Document, XWiki (api y core), XWikiDocument, api.Object, ModelFactory y
  *            ContextualAuthorizationManager, verificados con verify(...).
  *
- * Caminos cubiertos (13 tests = 100% lineas y ramas de ObjectResourceImpl):
+ * Caminos cubiertos (14 tests = 100% lineas y ramas de ObjectResourceImpl):
  *  getObject    : exito | objeto inexistente 404 | pagina inexistente 404 | XWikiException -> XWikiRestException
+ *                 | wiki nulo -> IllegalArgumentException (caso frontera propuesto por la IA del equipo)
  *  updateObject : sin permiso EDIT 401 | objeto inexistente 404 | exito 202 + save("",false)
  *                 | revision menor save("",true) | fallo al guardar -> XWikiRestException
  *  deleteObject : sin permiso EDIT 401 | objeto inexistente 404 | exito removeObject+save
@@ -275,6 +276,19 @@ class ObjectResourceImplTest
                 () -> this.objectResource.getObject(WIKI, SPACE, PAGE, CLASS_NAME, NUMERO, false));
             assertThat(ex.getResponse().getStatus(), is(Response.Status.NOT_FOUND.getStatusCode()));
         }
+    }
+
+    @Test
+    void getObject_WhenWikiNameIsNull_ShouldThrowIllegalArgumentException()
+    {
+        // Caso frontera propuesto por la herramienta IA del equipo (generador de
+        // casos): los nombres nulos no llegan al almacenamiento, getDocumentInfo
+        // los rechaza de entrada con IllegalArgumentException.
+        // Arrange: sin wiki valido no hace falta preparar ningun doble mas.
+
+        // Act + Assert
+        assertThrows(IllegalArgumentException.class,
+            () -> this.objectResource.getObject(null, SPACE, PAGE, CLASS_NAME, NUMERO, false));
     }
 
     @Test

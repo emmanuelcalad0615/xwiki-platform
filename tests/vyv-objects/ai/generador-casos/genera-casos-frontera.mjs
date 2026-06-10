@@ -1,11 +1,13 @@
 /**
- * Herramienta IA adicional: generador de casos frontera con un LLM (API de OpenAI).
+ * Herramienta IA adicional: generador de casos frontera con un LLM.
  *
  * Le entrega al modelo el codigo REAL de ObjectResourceImpl (release 18.4.0) y
  * la lista de tests existentes, y le pide proponer casos frontera que falten
  * (analisis estatico asistido por IA, complementa el diseno TDD de la suite).
  *
- * Requisitos: node >= 18, OPENAI_API_KEY exportada (la misma que usa DeepEval).
+ * Proveedor: Groq (API compatible con OpenAI, modelos Llama gratuitos) o OpenAI.
+ * Requisitos: node >= 18 y la variable de entorno GROQ_API_KEY (u OPENAI_API_KEY).
+ *   PowerShell:  $env:GROQ_API_KEY = "gsk_..."   (NUNCA commitear la key)
  * Ejecutar:   node genera-casos-frontera.mjs
  */
 import { readFileSync } from 'node:fs';
@@ -20,23 +22,27 @@ const RUTA_TEST = join(
 const URL_FUENTE =
   'https://raw.githubusercontent.com/xwiki/xwiki-platform/xwiki-platform-18.4.0/xwiki-platform-core/xwiki-platform-rest/xwiki-platform-rest-server/src/main/java/org/xwiki/rest/internal/resources/objects/ObjectResourceImpl.java';
 
-const apiKey = process.env.OPENAI_API_KEY;
+// Groq expone una API compatible con OpenAI; se usa el proveedor disponible.
+const usaGroq = Boolean(process.env.GROQ_API_KEY);
+const apiKey = process.env.GROQ_API_KEY ?? process.env.OPENAI_API_KEY;
 if (!apiKey) {
-  console.error('Falta OPENAI_API_KEY. Exportala y vuelve a ejecutar.');
+  console.error('Falta GROQ_API_KEY (u OPENAI_API_KEY). Exportala y vuelve a ejecutar.');
   process.exit(1);
 }
+const baseUrl = usaGroq ? 'https://api.groq.com/openai/v1' : 'https://api.openai.com/v1';
+const modelo = process.env.LLM_MODEL ?? (usaGroq ? 'llama-3.3-70b-versatile' : 'gpt-4o');
 
 const fuente = await (await fetch(URL_FUENTE)).text();
 const testsActuales = readFileSync(RUTA_TEST, 'utf8');
 
-const respuesta = await fetch('https://api.openai.com/v1/chat/completions', {
+const respuesta = await fetch(`${baseUrl}/chat/completions`, {
   method: 'POST',
   headers: {
     Authorization: `Bearer ${apiKey}`,
     'content-type': 'application/json'
   },
   body: JSON.stringify({
-    model: 'gpt-4o',
+    model: modelo,
     max_tokens: 2000,
     messages: [
       {

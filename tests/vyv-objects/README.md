@@ -21,6 +21,7 @@ objeto de una página. Todo prueba la **clase REAL** del release publicado
 | **IA**: generador de casos frontera (LLM) | `ai/generador-casos/` | `node genera-casos-frontera.mjs` |
 
 Detalle de diseño de las pruebas (caminos, dobles, TDD/BDD): **`PRUEBAS-OBJECTS.md`**.
+Mapa requisito→artefacto→evidencia de TODO lo pedido: **`CHECKLIST-CUMPLIMIENTO.md`**.
 
 ## Atajo: todo lo local en un comando
 
@@ -40,7 +41,7 @@ cd tests\vyv-objects
 | Unitarias y BDD | JDK 17/21 (23 funciona), Maven 3.9+, internet la 1ª vez (baja el release 18.4.0 de nexus.xwiki.org) |
 | E2E / UX / IA | `docker compose up -d` en la raíz + flavor de XWiki instalado (asistente en `http://localhost:8080`), Node 18+ |
 | Sonar | worktree `xwiki-184` (`..\vyv-rest\setup.ps1`) + SonarQube en `localhost:9000` |
-| DeepEval / Stagehand / generador | API key (`OPENAI_API_KEY`) |
+| DeepEval / Stagehand / generador | API key: `GROQ_API_KEY` (gratis, Llama) u `OPENAI_API_KEY` — solo como variable de entorno, nunca commitearla |
 
 ## SonarQube y quality gate
 

@@ -11,8 +11,9 @@ Que valida:
 Requisitos:
   - XWiki corriendo (docker compose up -d, flavor instalado) en localhost:8080.
   - pip install -r requirements.txt
-  - Una API key para el juez: OPENAI_API_KEY (default de DeepEval) o configurar
-    deepeval con otro proveedor compatible.
+  - Una API key para el juez LLM: GROQ_API_KEY (gratis, modelos Llama; ver
+    groq_judge.py) u OPENAI_API_KEY (default de DeepEval).
+    PowerShell:  $env:GROQ_API_KEY = "gsk_..."   (NUNCA commitear la key)
 
 Ejecutar:
   pytest test_objects_api_deepeval.py -v
@@ -41,7 +42,16 @@ def _xwiki_disponible() -> bool:
 
 
 def _hay_juez() -> bool:
-    return bool(os.environ.get("OPENAI_API_KEY"))
+    return bool(os.environ.get("GROQ_API_KEY") or os.environ.get("OPENAI_API_KEY"))
+
+
+def _modelo_juez():
+    """Devuelve el juez para GEval: Groq si hay key, si no el default (OpenAI)."""
+    if os.environ.get("GROQ_API_KEY"):
+        from groq_judge import GroqJudge
+
+        return GroqJudge()
+    return None
 
 
 requiere_entorno = pytest.mark.skipif(
@@ -104,6 +114,7 @@ def test_get_objeto_es_fiel_a_la_semantica_rest(objeto_creado):
         ),
         evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
         threshold=0.7,
+        model=_modelo_juez(),
     )
     assert_test(caso, [fidelidad])
 
@@ -136,5 +147,6 @@ def test_error_404_es_comprensible_para_el_consumidor(objeto_creado):
         ),
         evaluation_params=[LLMTestCaseParams.INPUT, LLMTestCaseParams.ACTUAL_OUTPUT],
         threshold=0.7,
+        model=_modelo_juez(),
     )
     assert_test(caso, [claridad])

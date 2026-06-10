@@ -30,6 +30,12 @@ métodos de la clase real (principio *Timely* de FIRST). Ramas de decisión:
 **13/13 caminos → 100% de líneas y ramas de la clase** (verificable con JaCoCo
 en `correr-objects.ps1 sonar`).
 
+Caso 14 (adoptado del **generador de casos con IA**, ver
+`ai/generador-casos/evidencia-ultima-ejecucion.md`):
+`getObject_WhenWikiNameIsNull_ShouldThrowIllegalArgumentException` — los
+nombres nulos se rechazan con `IllegalArgumentException` antes de tocar el
+almacenamiento, y esa excepción NO la envuelve el `catch (XWikiException)`.
+
 ---
 
 ## 2. Los 5 dobles de prueba (dónde aparece cada uno)
@@ -105,7 +111,7 @@ ambas corren contra la **misma clase real**, ninguna contra copias.
 
 ```text
 mvn test -f tests/vyv-rest/proyecto-modulo-real/pom.xml -Dtest=ObjectResourceImplTest
-  -> Tests run: 13, Failures: 0, Errors: 0, Skipped: 0  (BUILD SUCCESS)
+  -> Tests run: 14, Failures: 0, Errors: 0, Skipped: 0  (BUILD SUCCESS)
 mvn test -f tests/vyv-objects/bdd/pom.xml
   -> Tests run: 9, Failures: 0, Errors: 0 (9 escenarios Cucumber en verde, BUILD SUCCESS)
 ```
