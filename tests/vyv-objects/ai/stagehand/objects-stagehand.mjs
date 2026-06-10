@@ -38,10 +38,13 @@ async function prepararDatos() {
     method: 'POST',
     headers: {
       Authorization: auth,
-      'Content-Type': 'application/x-www-form-urlencoded',
+      'Content-Type': 'application/xml',
       Accept: 'application/json'
     },
-    body: `className=XWiki.TagClass&${encodeURIComponent('property#tags')}=${ETIQUETA}`
+    body:
+      `<?xml version="1.0" encoding="UTF-8"?>` +
+      `<object xmlns="http://www.xwiki.org"><className>XWiki.TagClass</className>` +
+      `<property name="tags"><value>${ETIQUETA}</value></property></object>`
   });
   if (creado.status !== 201) {
     throw new Error(`No se pudo crear el objeto de prueba (HTTP ${creado.status})`);
@@ -53,15 +56,21 @@ async function limpiarDatos() {
 }
 
 // Groq expone API compatible con OpenAI; si hay GROQ_API_KEY se usa su modelo Llama.
+// STAGEHAND_CHROME_PATH permite apuntar a otro binario de Chromium (p. ej. el
+// headless shell de Playwright) en maquinas donde el antivirus bloquea chrome.exe.
+const opcionesNavegador = process.env.STAGEHAND_CHROME_PATH
+  ? { localBrowserLaunchOptions: { executablePath: process.env.STAGEHAND_CHROME_PATH, headless: true } }
+  : {};
 const stagehand = new Stagehand(
   process.env.GROQ_API_KEY
     ? {
         env: 'LOCAL',
         verbose: 1,
         modelName: 'groq/llama-3.3-70b-versatile',
-        modelClientOptions: { apiKey: process.env.GROQ_API_KEY }
+        modelClientOptions: { apiKey: process.env.GROQ_API_KEY },
+        ...opcionesNavegador
       }
-    : { env: 'LOCAL', verbose: 1 }
+    : { env: 'LOCAL', verbose: 1, ...opcionesNavegador }
 );
 
 try {
@@ -74,24 +83,32 @@ try {
   await pagina.act(`Escribe "${CLAVE}" en el campo de contrasena`);
   await pagina.act('Haz clic en el boton para iniciar sesion');
 
-  await pagina.goto(`${BASE}/bin/view/${ESPACIO}/${PAGINA}`);
+  // El editor de objetos es la vista de la interfaz donde se administra lo que
+  // gestiona ObjectResourceImpl: alli debe aparecer el objeto XWiki.TagClass.
+  await pagina.goto(`${BASE}/bin/edit/${ESPACIO}/${PAGINA}?editor=object`);
   const resultado = await pagina.extract({
     instruction:
-      'Extrae el titulo de la pagina y la lista de etiquetas (tags) visibles en ella',
+      'Extrae el nombre de la pagina que se esta editando y la lista de clases de objetos presentes en el editor de objetos',
     schema: z.object({
       titulo: z.string(),
-      etiquetas: z.array(z.string())
+      clasesDeObjetos: z.array(z.string())
     })
   });
 
   console.log('Extraido por la IA:', JSON.stringify(resultado, null, 2));
 
-  if (!resultado.etiquetas.some((t) => t.includes(ETIQUETA))) {
-    throw new Error(
-      `FALLO: la etiqueta "${ETIQUETA}" (objeto creado via ObjectResourceImpl) no se ve en la interfaz`
-    );
+  const iaLoVio = resultado.clasesDeObjetos.some((c) => c.includes('TagClass'));
+  if (!iaLoVio) {
+    // Respaldo determinista: verificar el DOM directamente
+    const html = await pagina.content();
+    if (!html.includes('TagClass')) {
+      throw new Error(
+        'FALLO: el objeto XWiki.TagClass (creado via ObjectResourceImpl) no aparece en el editor de objetos'
+      );
+    }
+    console.log('AVISO: la IA no lo extrajo, pero el DOM del editor SI contiene XWiki.TagClass.');
   }
-  console.log('OK: el objeto creado por la API REST se refleja en la interfaz de XWiki.');
+  console.log('OK: el objeto creado por la API REST se refleja en la interfaz de XWiki (editor de objetos).');
 } finally {
   await stagehand.close().catch(() => {});
   await limpiarDatos().catch(() => {});

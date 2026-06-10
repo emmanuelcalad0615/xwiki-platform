@@ -9,3 +9,4 @@ ai/deepeval/__pycache__/
 ai/deepeval/.pytest_cache/
 ai/deepeval/.deepeval_telemetry.txt
 ai/stagehand/package-lock.json
+evidencias/

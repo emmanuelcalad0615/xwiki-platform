@@ -26,6 +26,13 @@ describe('API REST de objetos de una pagina (ObjectResourceImpl)', () => {
   const urlPagina = `/rest/wikis/${WIKI}/spaces/${espacio}/pages/${pagina}`;
   const urlObjetos = `${urlPagina}/objects`;
 
+  // Representacion XML del objeto: XWiki exige XML/JSON (no form-urlencoded,
+  // que bloquea su proteccion CSRF del API REST).
+  const xmlObjeto = (valorTags) =>
+    `<?xml version="1.0" encoding="UTF-8"?>` +
+    `<object xmlns="http://www.xwiki.org"><className>${clase}</className>` +
+    `<property name="tags"><value>${valorTags}</value></property></object>`;
+
   let numeroObjeto; // numero asignado por XWiki al crear el objeto
 
   before(() => {
@@ -48,9 +55,8 @@ describe('API REST de objetos de una pagina (ObjectResourceImpl)', () => {
       method: 'POST',
       url: urlObjetos,
       auth,
-      form: true,
-      headers: { Accept: 'application/json' },
-      body: { className: clase, 'property#tags': 'vyv-objects' }
+      headers: { 'Content-Type': 'application/xml', Accept: 'application/json' },
+      body: xmlObjeto('vyv-objects')
     }).then((res) => {
       expect(res.status).to.eq(201);
       numeroObjeto = res.body.number;
@@ -93,9 +99,8 @@ describe('API REST de objetos de una pagina (ObjectResourceImpl)', () => {
       method: 'PUT',
       url: `${urlObjetos}/${clase}/${numeroObjeto}`,
       auth,
-      form: true,
-      headers: { Accept: 'application/json' },
-      body: { 'property#tags': 'vyv-objects-actualizado' }
+      headers: { 'Content-Type': 'application/xml', Accept: 'application/json' },
+      body: xmlObjeto('vyv-objects-actualizado')
     }).then((res) => {
       expect(res.status).to.eq(202);
       const tags = (res.body.properties || []).find((p) => p.name === 'tags');
@@ -107,9 +112,9 @@ describe('API REST de objetos de una pagina (ObjectResourceImpl)', () => {
     cy.request({
       method: 'PUT',
       url: `${urlObjetos}/${clase}/${numeroObjeto}`,
-      form: true,
+      headers: { 'Content-Type': 'application/xml' },
       failOnStatusCode: false,
-      body: { 'property#tags': 'intruso' }
+      body: xmlObjeto('intruso')
     }).then((res) => {
       expect(res.status).to.be.oneOf([401, 403]);
       // Y el valor sigue intacto:

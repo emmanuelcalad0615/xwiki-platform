@@ -48,9 +48,9 @@ ResponseObject rPagina = peticion('PUT', urlPagina, 'application/xml',
     '<?xml version="1.0" encoding="UTF-8"?><page xmlns="http://www.xwiki.org"><title>Katalon objects</title><content>.</content></page>')
 WS.verifyStatusCode(rPagina, rPagina.statusCode in [201, 202] ? rPagina.statusCode : 201)
 
-// 2. Crear el objeto TagClass
-ResponseObject rCrear = peticion('POST', "${urlPagina}/objects",
-    'application/x-www-form-urlencoded', 'className=XWiki.TagClass&property%23tags=katalon-vyv')
+// 2. Crear el objeto TagClass (XML: el form-urlencoded lo bloquea el CSRF del REST)
+ResponseObject rCrear = peticion('POST', "${urlPagina}/objects", 'application/xml',
+    '<?xml version="1.0"?><object xmlns="http://www.xwiki.org"><className>XWiki.TagClass</className><property name="tags"><value>katalon-vyv</value></property></object>')
 WS.verifyStatusCode(rCrear, 201)
 int numero = new groovy.json.JsonSlurper().parseText(rCrear.responseText).number
 
@@ -62,8 +62,8 @@ assert objeto.className == clase
 assert objeto.number == numero
 
 // 4. PUT de actualizacion (camino 202 de updateObject)
-ResponseObject rPut = peticion('PUT', "${urlPagina}/objects/${clase}/${numero}",
-    'application/x-www-form-urlencoded', 'property%23tags=katalon-actualizado')
+ResponseObject rPut = peticion('PUT', "${urlPagina}/objects/${clase}/${numero}", 'application/xml',
+    '<?xml version="1.0"?><object xmlns="http://www.xwiki.org"><className>XWiki.TagClass</className><property name="tags"><value>katalon-actualizado</value></property></object>')
 WS.verifyStatusCode(rPut, 202)
 
 // 5. DELETE (camino exito de deleteObject) y verificacion 404 posterior
