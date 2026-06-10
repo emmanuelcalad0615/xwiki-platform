@@ -17,7 +17,8 @@ import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
 import com.xpn.xwiki.doc.XWikiDocument;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -34,6 +35,7 @@ class PageTagsResourceImplSetErrorTest extends AbstractPageTagsResourceTest
     @Test
     void setTags_WhenDocumentIsNull_ShouldThrowUnauthorized_UsingDummy() throws Exception
     {
+        // Arrange
         Tags dummyTags = new Tags();
         Boolean dummyMinor = false;
 
@@ -43,15 +45,17 @@ class PageTagsResourceImplSetErrorTest extends AbstractPageTagsResourceTest
         try (MockedStatic<Utils> utils = mockStatic(Utils.class)) {
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
 
+            // Act + Assert
             WebApplicationException ex = assertThrows(WebApplicationException.class,
                 () -> this.resource.setTags(WIKI, SPACE, PAGE, dummyMinor, dummyTags));
-            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), ex.getResponse().getStatus());
+            assertThat(ex.getResponse().getStatus(), is(Response.Status.UNAUTHORIZED.getStatusCode()));
         }
     }
 
     @Test
     void setTags_WhenUserHasNoEditRights_ShouldThrowUnauthorized_UsingStub() throws Exception
     {
+        // Arrange
         Tags dummyTags = new Tags();
 
         com.xpn.xwiki.api.XWiki apiXWiki = mock(com.xpn.xwiki.api.XWiki.class);
@@ -62,15 +66,17 @@ class PageTagsResourceImplSetErrorTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
             utils.when(() -> Utils.getXWikiUser(any())).thenReturn("XWiki.Invitado");
 
+            // Act + Assert
             WebApplicationException ex = assertThrows(WebApplicationException.class,
                 () -> this.resource.setTags(WIKI, SPACE, PAGE, false, dummyTags));
-            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), ex.getResponse().getStatus());
+            assertThat(ex.getResponse().getStatus(), is(Response.Status.UNAUTHORIZED.getStatusCode()));
         }
     }
 
     @Test
     void setTags_WhenCreateNewObjectFails_ShouldThrowInternalServerError_UsingMock() throws Exception
     {
+        // Arrange
         Tags tags = new Tags();
 
         com.xpn.xwiki.api.XWiki apiXWiki = mock(com.xpn.xwiki.api.XWiki.class);
@@ -95,15 +101,17 @@ class PageTagsResourceImplSetErrorTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
             utils.when(() -> Utils.getXWikiUser(any())).thenReturn("XWiki.Admin");
 
+            // Act + Assert
             WebApplicationException ex = assertThrows(WebApplicationException.class,
                 () -> this.resource.setTags(WIKI, SPACE, PAGE, false, tags));
-            assertEquals(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode(), ex.getResponse().getStatus());
+            assertThat(ex.getResponse().getStatus(), is(Response.Status.INTERNAL_SERVER_ERROR.getStatusCode()));
         }
     }
 
     @Test
     void setTags_WhenGetDocumentThrows_ShouldThrowXWikiRestException_UsingSpy() throws Exception
     {
+        // Arrange
         Tags tags = new Tags();
 
         com.xpn.xwiki.api.XWiki apiXWiki = mock(com.xpn.xwiki.api.XWiki.class);
@@ -122,6 +130,7 @@ class PageTagsResourceImplSetErrorTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
             utils.when(() -> Utils.getXWikiUser(any())).thenReturn("XWiki.Admin");
 
+            // Act + Assert
             assertThrows(XWikiRestException.class, () -> this.resource.setTags(WIKI, SPACE, PAGE, false, tags));
             verify(xwiki).getDocument(docRef, xcontext);
         }

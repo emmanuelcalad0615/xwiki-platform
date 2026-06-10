@@ -19,7 +19,9 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
@@ -39,6 +41,7 @@ class PageTagsResourceImplGetSuccessTest extends AbstractPageTagsResourceTest
     @SuppressWarnings("unchecked")
     void getPageTags_ShouldUseObjectFactory_WhenDocumentHasTags_UsingSpy() throws Exception
     {
+        // Arrange
         XWiki xwiki = mock(XWiki.class);
         XWikiContext xcontext = mock(XWikiContext.class);
         XWikiDocument xwikiDoc = mock(XWikiDocument.class);
@@ -60,9 +63,11 @@ class PageTagsResourceImplGetSuccessTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.createURI(any(), any(), any(Object[].class)))
                 .thenAnswer(inv -> URI.create("http://localhost:8080/rest/wikis/xwiki/tags/etiqueta1"));
 
+            // Act
             Tags result = this.resource.getPageTags(WIKI, SPACE, PAGE);
 
-            assertNotNull(result);
+            // Assert
+            assertThat(result, is(notNullValue()));
             verify(spyFactory).createTags();
             verify(spyFactory).createTag();
         }
@@ -72,6 +77,7 @@ class PageTagsResourceImplGetSuccessTest extends AbstractPageTagsResourceTest
     @SuppressWarnings("unchecked")
     void getPageTags_WhenGetDocumentThrows_ShouldThrowXWikiRestException_UsingMock() throws Exception
     {
+        // Arrange
         XWiki xwiki = mock(XWiki.class);
         XWikiContext xcontext = mock(XWikiContext.class);
 
@@ -82,6 +88,7 @@ class PageTagsResourceImplGetSuccessTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWiki(any())).thenReturn(xwiki);
             utils.when(() -> Utils.getXWikiContext(any())).thenReturn(xcontext);
 
+            // Act + Assert
             assertThrows(XWikiRestException.class, () -> this.resource.getPageTags(WIKI, SPACE, PAGE));
         }
     }

@@ -32,10 +32,12 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.mock;
@@ -97,8 +99,8 @@ class CommentsVersionResourceImplTest
             Comments result = this.resource.getCommentsVersion(WIKI, SPACE, PAGE, VERSION, 0, 10, dummyPrettyNames);
 
             // Assert
-            assertNotNull(result);
-            assertTrue(result.getComments().isEmpty());
+            assertThat(result, is(notNullValue()));
+            assertThat(result.getComments(), is(empty()));
         }
     }
 
@@ -128,7 +130,7 @@ class CommentsVersionResourceImplTest
             Comments result = this.resource.getCommentsVersion(WIKI, SPACE, PAGE, VERSION, 0, 10, false);
 
             // Assert
-            assertEquals(1, result.getComments().size());
+            assertThat(result.getComments(), hasSize(1));
             verify(spyFactory).createComments();                            // SPY
         }
     }

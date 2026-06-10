@@ -33,11 +33,13 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -119,8 +121,8 @@ class CommentsResourceImplTest
             Comments result = this.commentsResource.getComments(WIKI, SPACE, PAGE, 0, 10, dummyPrettyNames);
 
             // Assert
-            assertNotNull(result);
-            assertTrue(result.getComments().isEmpty());
+            assertThat(result, is(notNullValue()));
+            assertThat(result.getComments(), is(empty()));
         }
     }
 
@@ -151,7 +153,7 @@ class CommentsResourceImplTest
             Comments result = this.commentsResource.getComments(WIKI, SPACE, PAGE, 0, 10, false);
 
             // Assert
-            assertEquals(2, result.getComments().size());
+            assertThat(result.getComments(), hasSize(2));
             verify(spyFactory).createComments();                            // SPY: objeto real usado
         }
     }
@@ -190,7 +192,7 @@ class CommentsResourceImplTest
             // Act + Assert
             WebApplicationException ex = assertThrows(WebApplicationException.class,
                 () -> this.commentsResource.postComment(WIKI, SPACE, PAGE, input));
-            assertEquals(Response.Status.UNAUTHORIZED.getStatusCode(), ex.getResponse().getStatus());
+            assertThat(ex.getResponse().getStatus(), is(Response.Status.UNAUTHORIZED.getStatusCode()));
         }
     }
 
@@ -222,7 +224,7 @@ class CommentsResourceImplTest
             Response response = this.commentsResource.postComment(WIKI, SPACE, PAGE, input);
 
             // Assert
-            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+            assertThat(response.getStatus(), is(Response.Status.CREATED.getStatusCode()));
             verify(commentObject).set(eq("highlight"), eq("fragmento"));
             verify(commentObject).set(eq("comment"), eq("Respuesta resaltada"));
             verify(commentObject).set(eq("replyto"), eq(0));
@@ -256,7 +258,7 @@ class CommentsResourceImplTest
             Response response = this.commentsResource.postComment(WIKI, SPACE, PAGE, input);
 
             // Assert
-            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+            assertThat(response.getStatus(), is(Response.Status.CREATED.getStatusCode()));
             verify(commentObject).set(eq("highlight"), eq("solo-resaltado"));
             verify(commentObject, never()).set(eq("comment"), any());
             verify(doc).save();
@@ -289,7 +291,7 @@ class CommentsResourceImplTest
             Response response = this.commentsResource.postComment(WIKI, SPACE, PAGE, input);
 
             // Assert
-            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+            assertThat(response.getStatus(), is(Response.Status.CREATED.getStatusCode()));
             verify(commentObject).set(eq("comment"), eq("Comentario de prueba"));
             verify(doc).save();
         }
@@ -322,7 +324,7 @@ class CommentsResourceImplTest
             Response response = this.commentsResource.postComment(WIKI, SPACE, PAGE, input);
 
             // Assert
-            assertEquals(Response.Status.CREATED.getStatusCode(), response.getStatus());
+            assertThat(response.getStatus(), is(Response.Status.CREATED.getStatusCode()));
             verify(commentObject).set(eq("comment"), eq("Respuesta"));
             verify(commentObject).set(eq("replyto"), eq(0));
             verify(doc).save();
@@ -350,7 +352,7 @@ class CommentsResourceImplTest
             Response response = this.commentsResource.postComment(WIKI, SPACE, PAGE, input);
 
             // Assert
-            assertNull(response);
+            assertThat(response, is(nullValue()));
             verify(doc, never()).save();
         }
     }

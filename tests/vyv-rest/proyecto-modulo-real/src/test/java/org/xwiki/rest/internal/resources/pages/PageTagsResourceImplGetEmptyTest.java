@@ -12,8 +12,10 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.BaseProperty;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.empty;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.ArgumentMatchers.anyString;
@@ -30,6 +32,7 @@ class PageTagsResourceImplGetEmptyTest extends AbstractPageTagsResourceTest
     @SuppressWarnings("unchecked")
     void getPageTags_WhenDocumentHasNoTagObject_ShouldReturnEmptyTags_UsingStub() throws Exception
     {
+        // Arrange
         XWiki xwiki = mock(XWiki.class);
         XWikiContext xcontext = mock(XWikiContext.class);
         XWikiDocument xwikiDoc = mock(XWikiDocument.class);
@@ -42,10 +45,12 @@ class PageTagsResourceImplGetEmptyTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWiki(any())).thenReturn(xwiki);
             utils.when(() -> Utils.getXWikiContext(any())).thenReturn(xcontext);
 
+            // Act
             Tags result = this.resource.getPageTags(WIKI, SPACE, PAGE);
 
-            assertNotNull(result);
-            assertEquals(0, result.getTags().size());
+            // Assert
+            assertThat(result, is(notNullValue()));
+            assertThat(result.getTags(), is(empty()));
         }
     }
 
@@ -53,6 +58,7 @@ class PageTagsResourceImplGetEmptyTest extends AbstractPageTagsResourceTest
     @SuppressWarnings("unchecked")
     void getPageTags_WhenTagPropertyIsNull_ShouldReturnEmptyTags_UsingStub() throws Exception
     {
+        // Arrange
         XWiki xwiki = mock(XWiki.class);
         XWikiContext xcontext = mock(XWikiContext.class);
         XWikiDocument xwikiDoc = mock(XWikiDocument.class);
@@ -67,10 +73,12 @@ class PageTagsResourceImplGetEmptyTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWiki(any())).thenReturn(xwiki);
             utils.when(() -> Utils.getXWikiContext(any())).thenReturn(xcontext);
 
+            // Act
             Tags result = this.resource.getPageTags(WIKI, SPACE, PAGE);
 
-            assertNotNull(result);
-            assertEquals(0, result.getTags().size());
+            // Assert
+            assertThat(result, is(notNullValue()));
+            assertThat(result.getTags(), is(empty()));
         }
     }
 
@@ -78,6 +86,7 @@ class PageTagsResourceImplGetEmptyTest extends AbstractPageTagsResourceTest
     @SuppressWarnings("unchecked")
     void getPageTags_WhenTagValueIsNull_ShouldReturnEmptyTags_UsingStub() throws Exception
     {
+        // Arrange
         XWiki xwiki = mock(XWiki.class);
         XWikiContext xcontext = mock(XWikiContext.class);
         XWikiDocument xwikiDoc = mock(XWikiDocument.class);
@@ -94,10 +103,12 @@ class PageTagsResourceImplGetEmptyTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWiki(any())).thenReturn(xwiki);
             utils.when(() -> Utils.getXWikiContext(any())).thenReturn(xcontext);
 
+            // Act
             Tags result = this.resource.getPageTags(WIKI, SPACE, PAGE);
 
-            assertNotNull(result);
-            assertEquals(0, result.getTags().size());
+            // Assert
+            assertThat(result, is(notNullValue()));
+            assertThat(result.getTags(), is(empty()));
         }
     }
 }

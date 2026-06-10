@@ -18,7 +18,8 @@ import com.xpn.xwiki.doc.XWikiDocument;
 import com.xpn.xwiki.objects.BaseObject;
 import com.xpn.xwiki.objects.classes.BaseClass;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -34,6 +35,7 @@ class PageTagsResourceImplSetSuccessTest extends AbstractPageTagsResourceTest
     @Test
     void setTags_WhenTagObjectExists_ShouldCallSaveDocument_UsingMock() throws Exception
     {
+        // Arrange
         Tags tags = new Tags();
 
         com.xpn.xwiki.api.XWiki apiXWiki = mock(com.xpn.xwiki.api.XWiki.class);
@@ -57,16 +59,19 @@ class PageTagsResourceImplSetSuccessTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
             utils.when(() -> Utils.getXWikiUser(any())).thenReturn("XWiki.Admin");
 
+            // Act
             Response response = this.resource.setTags(WIKI, SPACE, PAGE, true, tags);
 
+            // Assert
             verify(xwiki).saveDocument(xwikiDoc, "", true, xcontext);
-            assertEquals(Response.Status.ACCEPTED.getStatusCode(), response.getStatus());
+            assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
         }
     }
 
     @Test
     void setTags_WhenTagObjectDoesNotExist_ShouldCreateNewObject_UsingFake() throws Exception
     {
+        // Arrange
         FakeTags fakeTags = new FakeTags("java", "testing");
 
         com.xpn.xwiki.api.XWiki apiXWiki = mock(com.xpn.xwiki.api.XWiki.class);
@@ -97,11 +102,13 @@ class PageTagsResourceImplSetSuccessTest extends AbstractPageTagsResourceTest
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
             utils.when(() -> Utils.getXWikiUser(any())).thenReturn("XWiki.Admin");
 
+            // Act
             Response response = this.resource.setTags(WIKI, SPACE, PAGE, false, fakeTags);
 
+            // Assert
             verify(xwikiDoc).createNewObject(TAG_CLASS, xcontext);
             verify(newTagObject).set("tags", Arrays.asList("java", "testing"), xcontext);
-            assertEquals(Response.Status.ACCEPTED.getStatusCode(), response.getStatus());
+            assertThat(response.getStatus(), is(Response.Status.ACCEPTED.getStatusCode()));
         }
     }
 }

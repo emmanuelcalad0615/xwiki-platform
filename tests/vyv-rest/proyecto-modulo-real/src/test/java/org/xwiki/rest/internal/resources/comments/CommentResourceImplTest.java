@@ -31,8 +31,9 @@ import org.xwiki.test.junit5.mockito.InjectMockComponents;
 import com.xpn.xwiki.XWikiException;
 import com.xpn.xwiki.api.Document;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
@@ -102,8 +103,8 @@ class CommentResourceImplTest
             Comment result = this.commentResource.getComment(WIKI, SPACE, PAGE, 0, 0, 10, dummyPrettyNames);
 
             // Assert
-            assertNotNull(result);
-            assertEquals(0, result.getId());
+            assertThat(result, is(notNullValue()));
+            assertThat(result.getId(), is(0));
         }
     }
 
@@ -136,7 +137,7 @@ class CommentResourceImplTest
             Comment result = this.commentResource.getComment(WIKI, SPACE, PAGE, 1, 0, 10, false);
 
             // Assert
-            assertEquals(1, result.getId());
+            assertThat(result.getId(), is(1));
             verify(spyComments, atLeastOnce()).iterator();                  // SPY: se itero la coleccion
         }
     }
@@ -160,7 +161,7 @@ class CommentResourceImplTest
             // Act + Assert
             WebApplicationException ex = assertThrows(WebApplicationException.class,
                 () -> this.commentResource.getComment(WIKI, SPACE, PAGE, 9999, 0, 10, false));
-            assertEquals(Response.Status.NOT_FOUND.getStatusCode(), ex.getResponse().getStatus());
+            assertThat(ex.getResponse().getStatus(), is(Response.Status.NOT_FOUND.getStatusCode()));
         }
     }
 
