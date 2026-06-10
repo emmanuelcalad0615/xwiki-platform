@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+
+  <groupId>com.vyv.rest</groupId>
+  <artifactId>tags-bdd</artifactId>
+  <version>1.0.0</version>
+  <packaging>jar</packaging>
+
+  <name>V&amp;V - BDD (Cucumber/Gherkin + Screenplay) de PageTagsResourceImpl (XWiki 18.4.0)</name>
+  <description>
+    Escenarios Gherkin ejecutables con Cucumber JVM y patrón Screenplay
+    contra la clase REAL PageTagsResourceImpl del artefacto release 18.4.0 de XWiki.
+  </description>
+
+  <properties>
+    <maven.compiler.release>21</maven.compiler.release>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <xwiki.version>18.4.0</xwiki.version>
+    <cucumber.version>7.20.1</cucumber.version>
+    <junit.version>5.11.4</junit.version>
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>xwiki-public</id>
+      <url>https://nexus.xwiki.org/nexus/content/groups/public/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </repository>
+  </repositories>
+  <pluginRepositories>
+    <pluginRepository>
+      <id>xwiki-public-plugins</id>
+      <url>https://nexus.xwiki.org/nexus/content/groups/public/</url>
+      <releases><enabled>true</enabled></releases>
+      <snapshots><enabled>false</enabled></snapshots>
+    </pluginRepository>
+  </pluginRepositories>
+
+  <dependencyManagement>
+    <dependencies>
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-bom</artifactId>
+        <version>${cucumber.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
+  <dependencies>
+    <!-- Código real bajo prueba -->
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-rest-server</artifactId>
+      <version>${xwiki.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>org.xwiki.platform</groupId>
+      <artifactId>xwiki-platform-oldcore</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Mockito + utilidades de test alineadas con XWiki -->
+    <dependency>
+      <groupId>org.xwiki.commons</groupId>
+      <artifactId>xwiki-commons-tool-test-component</artifactId>
+      <version>${xwiki.version}</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Cucumber JVM (Gherkin en español) sobre JUnit Platform -->
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Hamcrest: aserciones fluidas en los pasos -->
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest</artifactId>
+      <version>2.2</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- FieldUtils para inyectar dependencias del recurso real -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.14.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Workarounds de dependencias para JUnit/Mockito -->
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy</artifactId>
+      <version>1.15.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>net.bytebuddy</groupId>
+      <artifactId>byte-buddy-agent</artifactId>
+      <version>1.15.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.glassfish.jersey.core</groupId>
+      <artifactId>jersey-common</artifactId>
+      <version>2.41</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>jakarta.annotation</groupId>
+      <artifactId>jakarta.annotation-api</artifactId>
+      <version>2.1.1</version>
+      <scope>test</scope>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>3.2.5</version>
+        <configuration>
+          <argLine>-Dfile.encoding=UTF-8</argLine>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>

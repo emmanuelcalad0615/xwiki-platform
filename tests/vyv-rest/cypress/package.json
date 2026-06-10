@@ -1,0 +1,17 @@
+{
+  "name": "xwiki-tags-cypress-tests",
+  "version": "1.0.0",
+  "description": "Pruebas Cypress para Gestion de Etiquetas XWiki",
+  "main": "index.js",
+  "scripts": {
+    "test": "cypress run",
+    "cypress:open": "cypress open",
+    "test:api": "cypress run --spec cypress/e2e/api.cy.js",
+    "test:ui": "cypress run --spec cypress/e2e/ui.cy.js",
+    "test:security": "cypress run --spec cypress/e2e/security.cy.js",
+    "test:regression": "cypress run --spec cypress/e2e/regression.cy.js"
+  },
+  "devDependencies": {
+    "cypress": "^13.0.0"
+  }
+}
