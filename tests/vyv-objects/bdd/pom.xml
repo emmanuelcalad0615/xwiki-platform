@@ -5,21 +5,24 @@
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>com.vyv</groupId>
-  <artifactId>comentarios-modulo-real</artifactId>
+  <artifactId>objects-bdd</artifactId>
   <version>1.0.0</version>
   <packaging>jar</packaging>
 
-  <name>V&amp;V - Pruebas unitarias contra el modulo real de XWiki (release 18.4.0)</name>
+  <name>V&amp;V - BDD (Cucumber/Gherkin + Screenplay) de ObjectResourceImpl (XWiki 18.4.0)</name>
   <description>
-    Ejecuta las pruebas unitarias reales (CommentsResourceImpl, CommentResourceImpl,
-    CommentsVersionResourceImpl, CommentVersionResourceImpl) dependiendo del artefacto
-    release ya compilado de XWiki, sin tener que construir todo el monorepo.
+    Escenarios Gherkin (en espanol) ejecutables con Cucumber JVM y patron Screenplay
+    (Actor / Habilidad / Tarea / Pregunta) contra la clase REAL ObjectResourceImpl del
+    artefacto release 18.4.0 de XWiki, sin compilar el monorepo. El wiki se simula con
+    dobles de prueba (Mockito), igual que en las unitarias del equipo.
   </description>
 
   <properties>
     <maven.compiler.release>17</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <xwiki.version>18.4.0</xwiki.version>
+    <cucumber.version>7.20.1</cucumber.version>
+    <junit.version>5.11.4</junit.version>
   </properties>
 
   <repositories>
@@ -39,15 +42,36 @@
     </pluginRepository>
   </pluginRepositories>
 
+  <dependencyManagement>
+    <dependencies>
+      <!-- Alinear TODO JUnit (jupiter + platform) para que el motor de Cucumber
+           y la suite usen la misma version de la plataforma. -->
+      <dependency>
+        <groupId>org.junit</groupId>
+        <artifactId>junit-bom</artifactId>
+        <version>${junit.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+      <dependency>
+        <groupId>io.cucumber</groupId>
+        <artifactId>cucumber-bom</artifactId>
+        <version>${cucumber.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
+    </dependencies>
+  </dependencyManagement>
+
   <dependencies>
-    <!-- Codigo real bajo prueba (clases de comentarios ya compiladas) -->
+    <!-- Codigo real bajo prueba: ObjectResourceImpl vive aqui -->
     <dependency>
       <groupId>org.xwiki.platform</groupId>
       <artifactId>xwiki-platform-rest-server</artifactId>
       <version>${xwiki.version}</version>
     </dependency>
 
-    <!-- Framework de test por componentes de XWiki: @ComponentTest, @InjectMockComponents -->
+    <!-- Mockito + utilidades de test alineadas con XWiki -->
     <dependency>
       <groupId>org.xwiki.commons</groupId>
       <artifactId>xwiki-commons-tool-test-component</artifactId>
@@ -55,21 +79,29 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- JUnit 5 + Mockito los aporta xwiki-commons-tool-test-component en versiones
-         alineadas; no los fijamos aqui para evitar conflictos (OutputDirectoryCreator). -->
-
-    <!-- FieldUtils para inyectar campos protegidos -->
+    <!-- Cucumber JVM (Gherkin en espanol) sobre JUnit Platform -->
     <dependency>
-      <groupId>org.apache.commons</groupId>
-      <artifactId>commons-lang3</artifactId>
-      <version>3.14.0</version>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-java</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>io.cucumber</groupId>
+      <artifactId>cucumber-junit-platform-engine</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.platform</groupId>
+      <artifactId>junit-platform-suite</artifactId>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.junit.jupiter</groupId>
+      <artifactId>junit-jupiter</artifactId>
       <scope>test</scope>
     </dependency>
 
-    <!-- Hamcrest unificado: por resolucion transitiva solo llegan hamcrest-core 1.3
-         y el shim vacio hamcrest-library 3.0, asi que org.hamcrest.Matchers (usado
-         por los tests de comments, pages y objects) no existe en el classpath y la
-         compilacion falla. Este jar lo restaura sin tocar nada mas. -->
+    <!-- Hamcrest: aserciones fluidas en los pasos -->
     <dependency>
       <groupId>org.hamcrest</groupId>
       <artifactId>hamcrest</artifactId>
@@ -77,8 +109,15 @@
       <scope>test</scope>
     </dependency>
 
-    <!-- Forzar byte-buddy reciente: el que trae XWiki (1.12.18) no soporta JDK 21
-         y Mockito falla con "Unknown Java version: 0". -->
+    <!-- FieldUtils para inyectar las dependencias del recurso real -->
+    <dependency>
+      <groupId>org.apache.commons</groupId>
+      <artifactId>commons-lang3</artifactId>
+      <version>3.14.0</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- Workarounds identicos al proyecto de unitarias del equipo -->
     <dependency>
       <groupId>net.bytebuddy</groupId>
       <artifactId>byte-buddy</artifactId>
@@ -91,18 +130,12 @@
       <version>1.15.11</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- Implementacion JAX-RS (RuntimeDelegate) para construir Response/WebApplicationException
-         en las pruebas; en produccion la aporta el servidor. -->
     <dependency>
       <groupId>org.glassfish.jersey.core</groupId>
       <artifactId>jersey-common</artifactId>
       <version>2.41</version>
       <scope>test</scope>
     </dependency>
-
-    <!-- jersey-common expulsa jakarta.annotation-api; el framework de componentes de
-         XWiki necesita jakarta.annotation.Priority, asi que lo restauramos explicito. -->
     <dependency>
       <groupId>jakarta.annotation</groupId>
       <artifactId>jakarta.annotation-api</artifactId>

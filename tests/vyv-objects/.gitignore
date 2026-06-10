@@ -1,0 +1,8 @@
+# Salidas de build y dependencias locales (no se commitean)
+bdd/target/
+e2e/node_modules/
+e2e/cypress/screenshots/
+e2e/cypress/videos/
+ai/stagehand/node_modules/
+ai/deepeval/.deepeval/
+ai/deepeval/__pycache__/

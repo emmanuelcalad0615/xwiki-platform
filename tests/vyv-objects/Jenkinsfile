@@ -1,0 +1,169 @@
+// ============================================================
+// Jenkinsfile - Pipeline V&V de la funcionalidad "objects"
+// (ObjectResourceImpl: ver, actualizar y borrar objetos de una pagina)
+//
+// Etapas: unitarias (TDD/AAA/FIRST/dobles) + BDD (Cucumber/Gherkin/Screenplay)
+// + SonarQube (cobertura JaCoCo SOLO de ObjectResourceImpl, projectKey propio
+// Xwiki-objects para no pisar el dashboard del equipo) + deploy con Docker y
+// E2E Cypress (tolerante: requiere el flavor de XWiki ya instalado).
+//
+// Configurar el Job: Pipeline script from SCM -> Script Path:
+//   tests/vyv-objects/Jenkinsfile
+// ============================================================
+pipeline {
+    agent any
+
+    tools {
+        maven 'Maven-3.9'
+    }
+
+    environment {
+        XWIKI_TAG      = 'xwiki-platform-18.4.0'
+        COMPOSE_PROJECT_NAME = 'xwiki-platform'
+        WORKTREE       = "${WORKSPACE}/../xwiki-184"
+        MODULE         = "${WORKSPACE}/../xwiki-184/xwiki-platform-core/xwiki-platform-rest/xwiki-platform-rest-server"
+        XWIKI_SETTINGS = "${WORKSPACE}/tests/vyv-rest/settings-xwiki.xml"
+        UNIT_POM       = "${WORKSPACE}/tests/vyv-rest/proyecto-modulo-real/pom.xml"
+        BDD_POM        = "${WORKSPACE}/tests/vyv-objects/bdd/pom.xml"
+        TESTS_OBJECTS  = "${WORKSPACE}/tests/vyv-rest/proyecto-modulo-real/src/test/java/org/xwiki/rest/internal/resources/objects"
+        SONAR_INCLUSIONS = '**/objects/ObjectResourceImpl.java'
+        MAVEN_OPTS = '-Xmx2g'
+    }
+
+    options {
+        timeout(time: 1, unit: 'HOURS')
+        buildDiscarder(logRotator(numToKeepStr: '10'))
+        timestamps()
+    }
+
+    stages {
+
+        stage('Verify Environment') {
+            steps {
+                sh '''
+                    java -version
+                    mvn -version
+                    git --version
+                '''
+            }
+        }
+
+        stage('Unit Tests (objects)') {
+            steps {
+                echo 'Unitarias de ObjectResourceImpl contra el release 18.4.0 (mini-proyecto independiente)'
+                sh 'mvn -B test -f "$UNIT_POM" -Dtest=ObjectResourceImplTest'
+            }
+            post {
+                always {
+                    junit testResults: 'tests/vyv-rest/proyecto-modulo-real/target/surefire-reports/*.xml',
+                          allowEmptyResults: true
+                }
+            }
+        }
+
+        stage('BDD Tests (Cucumber + Screenplay)') {
+            steps {
+                echo 'Escenarios Gherkin ejecutables contra la clase real'
+                sh 'mvn -B test -f "$BDD_POM"'
+            }
+            post {
+                always {
+                    junit testResults: 'tests/vyv-objects/bdd/target/surefire-reports/*.xml',
+                          allowEmptyResults: true
+                    archiveArtifacts artifacts: 'tests/vyv-objects/bdd/target/cucumber-objetos.html',
+                                     allowEmptyArchive: true
+                }
+            }
+        }
+
+        stage('Setup Worktree (release 18.4.0)') {
+            steps {
+                echo 'Worktree del release para la cobertura Sonar sobre el modulo real'
+                sh '''
+                    if ! git tag --list "$XWIKI_TAG" | grep -q "$XWIKI_TAG"; then
+                      git fetch --depth 1 https://github.com/xwiki/xwiki-platform.git "refs/tags/${XWIKI_TAG}:refs/tags/${XWIKI_TAG}"
+                    fi
+                    git worktree remove --force "$WORKTREE" || true
+                    git worktree prune || true
+                    rm -rf "$WORKTREE" || true
+                    git worktree add -f "$WORKTREE" "$XWIKI_TAG"
+                '''
+            }
+        }
+
+        stage('Coverage + SonarQube (solo ObjectResourceImpl)') {
+            steps {
+                sh '''
+                    mkdir -p "$MODULE/src/test/java/org/xwiki/rest/internal/resources/objects"
+                    cp "$TESTS_OBJECTS"/*.java "$MODULE/src/test/java/org/xwiki/rest/internal/resources/objects/"
+                '''
+                dir("${MODULE}") {
+                    withSonarQubeEnv('SonarQube') {
+                        sh '''
+                            mvn -s "$XWIKI_SETTINGS" clean \
+                                org.jacoco:jacoco-maven-plugin:0.8.12:prepare-agent \
+                                test -Dtest=ObjectResourceImplTest \
+                                org.jacoco:jacoco-maven-plugin:0.8.12:report \
+                                org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+                                -Dsonar.projectKey=Xwiki-objects \
+                                -Dsonar.projectName=Xwiki-objects \
+                                -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
+                                -Dsonar.inclusions="$SONAR_INCLUSIONS" \
+                                -Dsonar.sourceEncoding=UTF-8
+                        '''
+                    }
+                    timeout(time: 5, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline: false
+                    }
+                }
+            }
+        }
+
+        stage('Deploy XWiki (docker compose)') {
+            steps {
+                sh '''
+                    if docker compose version >/dev/null 2>&1; then
+                      docker compose pull
+                      docker compose up -d
+                      docker compose ps
+                    else
+                      docker-compose pull && docker-compose up -d && docker-compose ps
+                    fi
+                '''
+            }
+        }
+
+        stage('E2E Cypress (tolerante)') {
+            // Requiere el flavor de XWiki instalado en el volumen; si no esta,
+            // la etapa avisa pero no tumba el pipeline.
+            steps {
+                catchError(buildResult: 'SUCCESS', stageResult: 'UNSTABLE') {
+                    dir('tests/vyv-objects/e2e') {
+                        sh '''
+                            npm ci || npm install
+                            npx cypress run
+                        '''
+                    }
+                }
+            }
+            post {
+                always {
+                    archiveArtifacts artifacts: 'tests/vyv-objects/e2e/cypress/screenshots/**',
+                                     allowEmptyArchive: true
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            archiveArtifacts artifacts: '**/xwiki-184/**/target/site/jacoco/**', allowEmptyArchive: true
+        }
+        success {
+            echo 'Pipeline objects: VERDE'
+        }
+        failure {
+            echo 'Pipeline objects: FALLO - revisar logs'
+        }
+    }
+}
