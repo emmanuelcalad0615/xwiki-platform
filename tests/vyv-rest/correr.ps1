@@ -81,8 +81,12 @@ Set-Location $modulo
 # Clases del equipo (solo estas cuentan en la cobertura cuando se usa $inclusions).
 # Ajusta esta lista si el equipo cambia de funcionalidades.
 $teamInclusions = "**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/attachments/AttachmentResourceImpl.java,**/pages/PageTagsResourceImpl.java"
+# Tests del equipo a EJECUTAR (excluye los tests propios de XWiki -p.ej. AttachmentsResourceImplTest-
+# que usan @OldcoreTest y rompen el component lookup en algunos entornos).
+$teamTests = "Comment*ResourceImplTest,PageTagsResourceImpl*Test,AttachmentResourceImplTest,ObjectResourceImplTest"
+$misTests  = "Comment*ResourceImplTest,PageTagsResourceImpl*Test"
 
-function Invoke-Sonar([string]$key, [string]$inclusions) {
+function Invoke-Sonar([string]$key, [string]$inclusions, [string]$tests) {
   if ([string]::IsNullOrWhiteSpace($token)) {
     throw "Falta token de Sonar. Pasa  -token TU_TOKEN  o ejecuta antes:  `$env:SONAR_TOKEN='sqp_...'"
   }
@@ -92,6 +96,7 @@ function Invoke-Sonar([string]$key, [string]$inclusions) {
     "test",
     "org.jacoco:jacoco-maven-plugin:0.8.12:report",
     "org.sonarsource.scanner.maven:sonar-maven-plugin:sonar",
+    "-Dtest=$tests",
     "-Dsonar.projectKey=$key", "-Dsonar.projectName=$key",
     "-Dsonar.host.url=$sonarUrl", "-Dsonar.token=$token"
   )
@@ -104,12 +109,12 @@ function Invoke-Sonar([string]$key, [string]$inclusions) {
 
 switch ($modo) {
   "equipo" {
-    Write-Host "==> Equipo: TODOS los tests + cobertura combinada (solo clases del equipo) -> Sonar '$projectKey'..." -ForegroundColor Cyan
-    Invoke-Sonar $projectKey $teamInclusions   # un solo analisis, cobertura limitada a las clases del equipo
+    Write-Host "==> Equipo: tests del equipo + cobertura combinada (solo clases del equipo) -> Sonar '$projectKey'..." -ForegroundColor Cyan
+    Invoke-Sonar $projectKey $teamInclusions $teamTests   # un solo analisis, cobertura limitada a las clases del equipo
   }
   "sonar" {
     Write-Host "==> Cobertura + Sonar '$projectKey' ($sonarUrl)..." -ForegroundColor Cyan
-    Invoke-Sonar $projectKey $null             # tu funcionalidad, sin filtro de inclusiones
+    Invoke-Sonar $projectKey $null $misTests              # tu funcionalidad
   }
   default {
     Write-Host "==> Corriendo tus tests..." -ForegroundColor Cyan

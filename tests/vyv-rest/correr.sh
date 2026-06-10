@@ -82,9 +82,13 @@ cd "$modulo"
 
 # Clases del equipo (solo estas cuentan en la cobertura cuando se usa inclusions).
 team_inclusions="**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/attachments/AttachmentResourceImpl.java,**/pages/PageTagsResourceImpl.java"
+# Tests del equipo a EJECUTAR (excluye los tests propios de XWiki -p.ej. AttachmentsResourceImplTest-
+# que usan @OldcoreTest y rompen el component lookup en algunos entornos).
+team_tests="Comment*ResourceImplTest,PageTagsResourceImpl*Test,AttachmentResourceImplTest,ObjectResourceImplTest"
+mis_tests="Comment*ResourceImplTest,PageTagsResourceImpl*Test"
 
 run_sonar() {
-  local key="$1" inclusions="$2"
+  local key="$1" inclusions="$2" tests="$3"
   if [ -z "$token" ]; then
     echo "Falta token de Sonar. Pasa  --token TU_TOKEN  o ejecuta antes:  export SONAR_TOKEN='sqp_...'"
     exit 1
@@ -95,6 +99,7 @@ run_sonar() {
     test
     org.jacoco:jacoco-maven-plugin:0.8.12:report
     org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+    "-Dtest=$tests"
     "-Dsonar.projectKey=$key" "-Dsonar.projectName=$key"
     "-Dsonar.host.url=$sonar_url" "-Dsonar.token=$token"
   )
@@ -107,12 +112,12 @@ run_sonar() {
 
 case "$modo" in
   equipo)
-    echo "==> Equipo: TODOS los tests + cobertura combinada (solo clases del equipo) -> Sonar '$project_key'..."
-    run_sonar "$project_key" "$team_inclusions"
+    echo "==> Equipo: tests del equipo + cobertura combinada (solo clases del equipo) -> Sonar '$project_key'..."
+    run_sonar "$project_key" "$team_inclusions" "$team_tests"
     ;;
   sonar)
     echo "==> Cobertura + Sonar '$project_key' ($sonar_url)..."
-    run_sonar "$project_key" ""
+    run_sonar "$project_key" "" "$mis_tests"
     ;;
   *)
     echo "==> Corriendo tus tests..."
