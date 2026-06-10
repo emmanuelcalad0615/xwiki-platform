@@ -27,6 +27,7 @@ pipeline {
         MODULE         = "${WORKSPACE}/../xwiki-184/xwiki-platform-core/xwiki-platform-rest/xwiki-platform-rest-server"
         XWIKI_SETTINGS = "${WORKSPACE}/tests/vyv-rest/settings-xwiki.xml"
         TESTS_SRC      = "${WORKSPACE}/tests/vyv-rest/proyecto-modulo-real/src/test/java"
+        MAIN_SRC       = "${WORKSPACE}/tests/vyv-rest/proyecto-modulo-real/src/main/java"
         // Solo estas clases cuentan en la cobertura (sync con correr.ps1 $teamInclusions)
         SONAR_INCLUSIONS = '**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/attachments/AttachmentResourceImpl.java,**/pages/PageTagsResourceImpl.java'
         MAVEN_OPTS = '-Xmx2g'
@@ -79,6 +80,13 @@ pipeline {
                 sh '''
                     mkdir -p "$MODULE/src/test/java"
                     cp -r "$TESTS_SRC/." "$MODULE/src/test/java/"
+                    # Sincronizar tambien el codigo de produccion modificado por el equipo
+                    # (sobre-escribe el original de XWiki en el worktree, p.ej. CommentsResourceImpl con validacion 400).
+                    if [ -d "$MAIN_SRC" ]; then
+                      mkdir -p "$MODULE/src/main/java"
+                      cp -r "$MAIN_SRC/." "$MODULE/src/main/java/"
+                      echo "=== main (produccion) sincronizado ==="
+                    fi
                     echo "=== tests sincronizados ==="
                     find "$MODULE/src/test/java/org/xwiki/rest/internal/resources" -name "*Test.java" | sed "s|.*/resources/||" | sort
                 '''

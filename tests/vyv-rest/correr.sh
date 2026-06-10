@@ -53,6 +53,9 @@ origen_mia="$origen_tree/org/xwiki/rest/internal/resources/comments"
 destino_mia="$destino_tree/org/xwiki/rest/internal/resources/comments"
 origen_pages="$origen_tree/org/xwiki/rest/internal/resources/pages"
 destino_pages="$destino_tree/org/xwiki/rest/internal/resources/pages"
+# Codigo de produccion modificado por el equipo (sobre-escribe el de XWiki en el worktree)
+origen_main="$here/proyecto-modulo-real/src/main/java"
+destino_main="$modulo/src/main/java"
 
 # --- Validaciones ---
 [ -d "$modulo" ] || { echo "Falta el worktree xwiki-184. Corre primero:  ./setup.sh"; exit 1; }
@@ -74,6 +77,13 @@ else
     cp "$origen_pages/"*.java "$destino_pages/"
   fi
   echo "    OK"
+fi
+
+# --- 1b. Sincronizar codigo de produccion modificado (si el equipo tiene src/main) ---
+if [ -d "$origen_main" ]; then
+  echo "==> Sincronizando codigo de produccion (main) modificado..."
+  mkdir -p "$destino_main"
+  cp -R "$origen_main/." "$destino_main/"
 fi
 
 # --- 2. Ejecutar ---

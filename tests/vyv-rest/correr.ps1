@@ -48,6 +48,9 @@ $destinoMia  = Join-Path $destinoTree "org\xwiki\rest\internal\resources\comment
 
 $origenPages   = Join-Path $origenTree  "org\xwiki\rest\internal\resources\pages"
 $destinoPages  = Join-Path $destinoTree "org\xwiki\rest\internal\resources\pages"
+# Codigo de produccion modificado por el equipo (sobre-escribe el de XWiki)
+$origenMain  = Join-Path $here   "proyecto-modulo-real\src\main\java"
+$destinoMain = Join-Path $modulo "src\main\java"
 
 # --- Validaciones ---
 if (-not (Test-Path $modulo)) { throw "Falta el worktree xwiki-184. Corre primero:  .\setup.ps1" }
@@ -72,6 +75,13 @@ else {
       Copy-Item "$origenPages\*.java" $destinoPages -Force
   }
   Write-Host "    OK" -ForegroundColor Green
+}
+
+# --- 1b. Sincronizar codigo de produccion modificado (si el equipo tiene src/main) ---
+if (Test-Path $origenMain) {
+  Write-Host "==> Sincronizando codigo de produccion (main) modificado..." -ForegroundColor Cyan
+  New-Item -ItemType Directory -Force -Path $destinoMain | Out-Null
+  Copy-Item "$origenMain\*" $destinoMain -Recurse -Force
 }
 
 # --- 2. Ejecutar ---

@@ -38,7 +38,6 @@ import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -332,27 +331,22 @@ class CommentsResourceImplTest
     }
 
     @Test
-    void postComment_WhenBodyHasNoContent_ShouldReturnNullWithoutSaving() throws Exception
+    void postComment_WhenBodyHasNoContent_ShouldThrowBadRequest() throws Exception
     {
         // Arrange
         com.xpn.xwiki.api.XWiki apiXWiki = mock(com.xpn.xwiki.api.XWiki.class);
         Document doc = mockAccessibleDocument(apiXWiki);
-        com.xpn.xwiki.api.Object commentObject = mock(com.xpn.xwiki.api.Object.class);
-        when(doc.createNewObject(COMMENTS_CLASS)).thenReturn(0);
-        when(doc.getObject(COMMENTS_CLASS, 0)).thenReturn(commentObject);
 
         Comment input = new Comment();
-        input.setReplyTo(0);   // sin text ni highlight
+        input.setReplyTo(0);   // sin text ni highlight -> comentario vacio
 
         try (MockedStatic<Utils> utils = mockStatic(Utils.class)) {
             utils.when(() -> Utils.getXWikiApi(any())).thenReturn(apiXWiki);
-            utils.when(() -> Utils.getXWikiUser(any())).thenReturn("XWiki.Admin");
 
-            // Act
-            Response response = this.commentsResource.postComment(WIKI, SPACE, PAGE, input);
-
-            // Assert
-            assertThat(response, is(nullValue()));
+            // Act + Assert
+            WebApplicationException ex = assertThrows(WebApplicationException.class,
+                () -> this.commentsResource.postComment(WIKI, SPACE, PAGE, input));
+            assertThat(ex.getResponse().getStatus(), is(Response.Status.BAD_REQUEST.getStatusCode()));
             verify(doc, never()).save();
         }
     }
