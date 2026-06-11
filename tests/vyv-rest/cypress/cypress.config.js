@@ -10,8 +10,8 @@ module.exports = defineConfig({
       wiki: "xwiki",
       space: "Main",
       page: "WebHome",
-      adminUser: "admin",
-      adminPass: "12345678",
+      adminUser: "emmanuel_calad",
+      adminPass: "Joaco06151970_",
       guestUser: "Guest",
       guestPass: "guest"
     },

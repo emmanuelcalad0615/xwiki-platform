@@ -74,8 +74,8 @@ describe('Page Tags UI Tests', () => {
 
     // 2. Localizar y clickear la "x" de borrar para esa etiqueta particular
     // XWiki suele tener un <span> o <a> con clase .tag-delete al lado del tag
-    cy.contains(tagToDelete).parent().within(() => {
-      cy.get('.tag-delete, a.delete-tag, .icon-delete').click({ force: true })
+    cy.contains(tagToDelete).closest('.tag-wrapper').within(() => {
+      cy.get('a.tag-delete').click({ force: true })
     })
 
     // 3. Recargar y comprobar que ya no existe en la UI

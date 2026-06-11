@@ -6,12 +6,22 @@
   "scripts": {
     "test": "cypress run",
     "cypress:open": "cypress open",
-    "test:api": "cypress run --spec cypress/e2e/api.cy.js",
-    "test:ui": "cypress run --spec cypress/e2e/ui.cy.js",
-    "test:security": "cypress run --spec cypress/e2e/security.cy.js",
-    "test:regression": "cypress run --spec cypress/e2e/regression.cy.js"
+    "test:api": "cypress run --spec cypress/e2e/api/etiquetas.api.cy.js",
+    "test:ui": "cypress run --spec cypress/e2e/ui/etiquetas.ui.cy.js",
+    "test:security": "cypress run --spec cypress/e2e/security/etiquetas.security.cy.js",
+    "test:regression": "cypress run --spec cypress/e2e/regression/etiquetas.regression.cy.js",
+    "test:a11y": "cypress run --spec cypress/e2e/a11y/etiquetas.a11y.cy.js",
+    "test:comments": "cypress run --spec cypress/e2e/api/comentarios.api.cy.js,cypress/e2e/security/comentarios.security.cy.js,cypress/e2e/regression/comentarios.regression.cy.js,cypress/e2e/ui/comentarios.ui.cy.js,cypress/e2e/a11y/comentarios.a11y.cy.js,cypress/e2e/performance/comentarios.performance.cy.js",
+    "test:comments:api": "cypress run --spec cypress/e2e/api/comentarios.api.cy.js",
+    "test:comments:security": "cypress run --spec cypress/e2e/security/comentarios.security.cy.js",
+    "test:comments:regression": "cypress run --spec cypress/e2e/regression/comentarios.regression.cy.js",
+    "test:comments:ui": "cypress run --spec cypress/e2e/ui/comentarios.ui.cy.js",
+    "test:comments:a11y": "cypress run --spec cypress/e2e/a11y/comentarios.a11y.cy.js",
+    "test:comments:performance": "cypress run --spec cypress/e2e/performance/comentarios.performance.cy.js"
   },
   "devDependencies": {
-    "cypress": "^13.0.0"
+    "axe-core": "^4.12.1",
+    "cypress": "^13.0.0",
+    "cypress-axe": "^1.7.0"
   }
 }
