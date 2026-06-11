@@ -7,7 +7,9 @@
     "stagehand:install:browsers": "playwright install chromium",
     "stagehand:ver": "tsx tests/ver-comentario.e2e.ts",
     "stagehand:crear": "tsx tests/crear-comentario.e2e.ts",
-    "stagehand:eliminar": "tsx tests/eliminar-comentario.e2e.ts"
+    "stagehand:eliminar": "tsx tests/eliminar-comentario.e2e.ts",
+    "stagehand:all": "npm run stagehand:ver && npm run stagehand:crear && npm run stagehand:eliminar",
+    "stagehand:eval": "tsx tests/eval-stagehand.eval.ts"
   },
   "devDependencies": {
     "@browserbasehq/stagehand": "^3.4.0",

@@ -84,4 +84,17 @@ tablas-de-caminos.md
 README_.md
 erro.md
 informe-vyv-unificado.md
+GUIA-PRUEBAS-COMENTARIOS.md
+INFORME-SONARQUBE-COMENTARIOS.docx
+generar_informe_sonar.py
+PLAN-E-INFORME-PRUEBAS-COMENTARIOS.md
 tests/vyv-rest/ai/stagehand/.env
+tests/vyv-rest/ai/deepeval/.env
+tests/vyv-rest/ai/deepeval/venv/
+tests/vyv-rest/ai/deepeval/.venv/
+tests/vyv-rest/ai/deepeval/data/
+tests/vyv-rest/ai/deepeval/.deepeval/
+tests/vyv-rest/ai/deepeval/.pytest_cache/
+__pycache__/
+*.pyc
+venv

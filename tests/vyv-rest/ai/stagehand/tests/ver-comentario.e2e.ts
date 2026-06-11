@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { createStagehand } from "../src";
-import { loginConIA } from "../src/login";
+import { loginDeterminista } from "../src/login";
 import { assertGreaterThan } from "../src/assert";
 import { crearPagina, crearComentario, borrarPagina } from "../src/seed";
 import "../src/env";
@@ -20,7 +20,7 @@ async function main() {
   const page = sh.context.activePage()!;
 
   try {
-    await loginConIA(sh);
+    await loginDeterminista(sh);
 
     await page.goto(`${baseUrl}/bin/view/${espacio}/${pagina}?viewer=comments`);
     await page.waitForLoadState("load");
