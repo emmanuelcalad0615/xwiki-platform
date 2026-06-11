@@ -91,10 +91,10 @@ export MAVEN_OPTS="-Xmx2g"
 cd "$modulo"
 
 # Clases del equipo (solo estas cuentan en la cobertura cuando se usa inclusions).
-team_inclusions="**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/attachments/AttachmentResourceImpl.java,**/pages/PageTagsResourceImpl.java"
+team_inclusions="**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/pages/PageTagsResourceImpl.java"
 # Tests del equipo a EJECUTAR (excluye los tests propios de XWiki -p.ej. AttachmentsResourceImplTest-
 # que usan @OldcoreTest y rompen el component lookup en algunos entornos).
-team_tests="Comment*ResourceImplTest,PageTagsResourceImpl*Test,AttachmentResourceImplTest,ObjectResourceImplTest"
+team_tests="Comment*ResourceImplTest,PageTagsResourceImpl*Test,ObjectResourceImplTest"
 mis_tests="Comment*ResourceImplTest,PageTagsResourceImpl*Test"
 
 run_sonar() {
@@ -116,6 +116,8 @@ run_sonar() {
   if [ -n "$inclusions" ]; then
     args+=("-Dsonar.inclusions=$inclusions")
   fi
+  # Attachments excluido del analisis (companero no presenta)
+  args+=("-Dsonar.test.exclusions=**/attachments/**")
   mvn "${args[@]}"
   echo "==> Resultados: $sonar_url/dashboard?id=$key"
 }

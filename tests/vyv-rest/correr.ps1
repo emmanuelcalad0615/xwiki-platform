@@ -90,10 +90,10 @@ Set-Location $modulo
 
 # Clases del equipo (solo estas cuentan en la cobertura cuando se usa $inclusions).
 # Ajusta esta lista si el equipo cambia de funcionalidades.
-$teamInclusions = "**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/attachments/AttachmentResourceImpl.java,**/pages/PageTagsResourceImpl.java"
+$teamInclusions = "**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/pages/PageTagsResourceImpl.java"
 # Tests del equipo a EJECUTAR (excluye los tests propios de XWiki -p.ej. AttachmentsResourceImplTest-
 # que usan @OldcoreTest y rompen el component lookup en algunos entornos).
-$teamTests = "Comment*ResourceImplTest,PageTagsResourceImpl*Test,AttachmentResourceImplTest,ObjectResourceImplTest"
+$teamTests = "Comment*ResourceImplTest,PageTagsResourceImpl*Test,ObjectResourceImplTest"
 $misTests  = "Comment*ResourceImplTest,PageTagsResourceImpl*Test"
 
 function Invoke-Sonar([string]$key, [string]$inclusions, [string]$tests) {
@@ -113,6 +113,8 @@ function Invoke-Sonar([string]$key, [string]$inclusions, [string]$tests) {
   if (-not [string]::IsNullOrWhiteSpace($inclusions)) {
     $mvnArgs += "-Dsonar.inclusions=$inclusions"
   }
+  # Attachments excluido del analisis (companero no presenta)
+  $mvnArgs += "-Dsonar.test.exclusions=**/attachments/**"
   mvn @mvnArgs
   Write-Host "==> Resultados: $sonarUrl/dashboard?id=$key" -ForegroundColor Yellow
 }

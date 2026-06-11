@@ -29,7 +29,7 @@ pipeline {
         TESTS_SRC      = "${WORKSPACE}/tests/vyv-rest/proyecto-modulo-real/src/test/java"
         MAIN_SRC       = "${WORKSPACE}/tests/vyv-rest/proyecto-modulo-real/src/main/java"
         // Solo estas clases cuentan en la cobertura (sync con correr.ps1 $teamInclusions)
-        SONAR_INCLUSIONS = '**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/attachments/AttachmentResourceImpl.java,**/pages/PageTagsResourceImpl.java'
+        SONAR_INCLUSIONS = '**/comments/Comment*Impl.java,**/objects/ObjectResourceImpl.java,**/pages/PageTagsResourceImpl.java'
         MAVEN_OPTS = '-Xmx2g'
     }
 
@@ -126,6 +126,7 @@ pipeline {
                                 -Dsonar.projectName=Xwiki \
                                 -Dsonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml \
                                 -Dsonar.inclusions="$SONAR_INCLUSIONS" \
+                                -Dsonar.test.exclusions="**/attachments/**" \
                                 -Dsonar.sourceEncoding=UTF-8
                         '''
                     }
