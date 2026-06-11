@@ -15,9 +15,10 @@ del repo. La clase bajo prueba es la REAL de XWiki (release 18.4.0):
 | 6 | **Patrón AAA** | Cada `@Test` seccionado `// Arrange`, `// Act`, `// Assert`; también en los pasos BDD (Given=Arrange, When=Act, Then=Assert) | Revisión del código + runs verdes |
 | 7 | **Principios FIRST** | Fast (todo en memoria, suite < 3 s), Isolated (dobles propios por test), Repeatable (entradas fijas), Self-validating (Hamcrest/JUnit), Timely (tabla de caminos primero) — detalle en `PRUEBAS-OBJECTS.md` §3 | Tiempos en `target/surefire-reports/` |
 | 8 | **Fluent Assertions** | Hamcrest en unitarias y BDD: `assertThat(x, is(...))`, `sameInstance`, `instanceOf`, `notNullValue`, `greaterThanOrEqualTo`; encadenadas con matchers compuestos `is(instanceOf(...))` | Mismos runs |
-| 9 | **Pruebas E2E** | `e2e/cypress/e2e/objects-api.cy.js`: ciclo completo real (crear página → crear objeto → GET 200 → 404 → PUT 202 → 401/403 → DELETE 204 → GET 404) contra el XWiki de docker-compose | `npx cypress run` con XWiki arriba |
-| 10 | **Pruebas de Experiencia de Usuario** | `e2e/cypress/e2e/objects-ux.cy.js`: login usable (campos visibles/etiquetados), el objeto se refleja como etiqueta visible en la página, presupuesto de tiempo de respuesta de la API (<3 s) | `npx cypress run --spec cypress/e2e/objects-ux.cy.js` |
-| 11 | **Cypress** | Proyecto `e2e/` (package.json + cypress.config.js + 2 specs) | ídem #9/#10 |
+| 9 | **Pruebas E2E** | Doble cobertura: `e2e/cypress/e2e/objects-api.cy.js` (ciclo real GET/PUT/DELETE + 404/401) **y** la suite Playwright `playwright/tests/objetos-api.spec.js` | `npx cypress run` y `npx playwright test` con XWiki arriba |
+| 10 | **Pruebas de Experiencia de Usuario** | `e2e/cypress/e2e/objects-ux.cy.js` + `cypress/.../ui/objetos.ui.cy.js` + `a11y/objetos.a11y.cy.js`: login usable, objeto reflejado en la página, accesibilidad WCAG 2.1 AA, presupuesto de tiempo | `npm run test:objects:ui` / `:a11y` |
+| 11 | **Cypress — 6 categorías** | En el proyecto COMPARTIDO `../vyv-rest/cypress/cypress/e2e/<cat>/objetos.<cat>.cy.js`: **api, security, performance, a11y, ui, regression** (16 tests, todos verdes). Una sola corrida registra objetos + comentarios + etiquetas | `cd ../vyv-rest/cypress && npm run test:objects` (o `npx cypress run` para las 3 funcionalidades) |
+| 11b | **Playwright** (2º motor E2E) | `playwright/tests/objetos-{api,ui}.spec.js`: ciclo REST con el `request` fixture + login y verificación en la UI con navegador real (7 tests verdes) | `cd playwright && npx playwright test` |
 | 12 | **Katalon** | `e2e/katalon/ObjectsApiKatalon.groovy`: mismo ciclo E2E con keywords WS de Katalon Studio (pegar en un Test Case en modo Script) | Ejecutable desde Katalon Studio |
 | 13 | **Jenkins** | `tests/vyv-objects/Jenkinsfile`: unitarias → BDD → worktree 18.4.0 → JaCoCo+Sonar (gate) → deploy Docker → Cypress; configurar job con Script Path `tests/vyv-objects/Jenkinsfile` | Reportes `junit` + artefactos archivados por el pipeline |
 | 14 | **Docker** | `docker-compose.yml` (raíz): XWiki + PostgreSQL; usado por E2E, UX, DeepEval y Stagehand; el pipeline Jenkins hace `docker compose pull/up` | `docker compose up -d` → `http://localhost:8080` |
@@ -25,6 +26,8 @@ del repo. La clase bajo prueba es la REAL de XWiki (release 18.4.0):
 | 16 | **IA 1: DeepEval** | `ai/deepeval/`: métricas GEval (LLM-as-judge) sobre las respuestas REALES de la API (fidelidad REST del GET, claridad del 404). Juez: **Groq** (`groq_judge.py`, `GROQ_API_KEY`) u OpenAI | `pytest test_objects_api_deepeval.py -v` con XWiki + key |
 | 17 | **IA 2: Stagehand** | `ai/stagehand/objects-stagehand.mjs`: navegador dirigido por LLM (act/extract) que inicia sesión y verifica que el objeto creado por la API se ve en la interfaz. Modelo Groq Llama u OpenAI | `npm run verificar` con XWiki + key |
 | 18 | **IA 3 (a criterio): generador de casos frontera** | `ai/generador-casos/genera-casos-frontera.mjs`: el LLM (Groq) analiza la clase real + la suite y propone casos faltantes | **Ejecutado**: ver `ai/generador-casos/evidencia-ultima-ejecucion.md`; su propuesta se adoptó como test 14 de la suite |
+| 19 | **Playwright (herramienta de testing IA adicional)** | `playwright/` con `@playwright/test`: navegador real headless dirigido por código, API + UI | **Ejecutado 7/7** — `evidencias/14-playwright-objetos.txt` |
+| 20 | **Registro unificado del equipo** | `../vyv-rest/correr-todo.ps1`: un comando corre y registra unitarias (45) + BDD etiquetas/comentarios + BDD objetos + Cypress compartido (3 funcionalidades) + Playwright (+IA con `-ia`) | **Ejecutado** — `evidencias/16-orquestador-correr-todo.txt` |
 
 ## Las API keys (importante)
 
@@ -49,14 +52,26 @@ BDD Cucumber        : 9 escenarios, 0 fallos
 JaCoCo (clase real) : instrucciones 177/177, ramas 10/10, líneas 36/36, métodos 4/4 = 100%
 SonarQube           : Quality Gate PASSED — Security A, Reliability A, Maintainability A,
                       Coverage 100%, 0 bugs, 0 vulnerabilidades, 0 code smells, 0 hotspots
-E2E Cypress (API)   : 7/7 passed contra XWiki real en Docker
-UX Cypress          : 3/3 passed (login usable, objeto reflejado en la página, presupuesto de tiempo)
+E2E Cypress (e2e/)  : api 7/7 + ux 3/3 passed contra XWiki real en Docker
+Cypress compartido  : objetos 16/16 (api 4, security 3, performance 3, a11y 2, ui 2, regression 2);
+                      comentarios 20/20; (etiquetas ui/a11y necesitan el flavor — specs del compañero)
+Playwright objetos  : 7/7 passed (api 5 + ui 2), segundo motor de navegador
 IA DeepEval (Groq)  : 3/3 passed contra la API real (juez LLM)
 IA Stagehand (Groq) : OK — la IA inició sesión y verificó el objeto en el editor de objetos
 IA generador        : ejecutado; su propuesta se adoptó como test 14 de la suite
+Orquestador         : correr-todo.ps1 -e2e — unitarias OK, BDD x2 OK, Playwright OK,
+                      Cypress compartido registra las 3 funcionalidades en una corrida
 ```
 
 Salidas completas, capturas y reportes en `evidencias/` (carpeta local, excluida de git).
+Evidencias nuevas: `12`/`13` (Cypress objetos 6 categorías), `14` (Playwright),
+`15` (Cypress compartido completo, 3 funcionalidades), `16` (orquestador consolidado).
+
+**Sobre los 2 rojos del run compartido**: son `ui/etiquetas` y `a11y/etiquetas`
+(funcionalidad *page tags*, de otro compañero). Dependen del panel de etiquetas
+`#xdocTags` que aporta el **flavor** de XWiki, no instalado en este entorno local.
+No se modificaron (instrucción: no tocar otras funcionalidades). Las 6 categorías
+de **objetos** pasan al 100%.
 
 **Hallazgo de la IA (documentado)**: con un criterio estricto, el juez LLM detectó
 que la página 404 por defecto del contenedor expone el banner de Apache Tomcat

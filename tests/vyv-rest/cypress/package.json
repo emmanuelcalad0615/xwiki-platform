@@ -17,7 +17,14 @@
     "test:comments:regression": "cypress run --spec cypress/e2e/regression/comentarios.regression.cy.js",
     "test:comments:ui": "cypress run --spec cypress/e2e/ui/comentarios.ui.cy.js",
     "test:comments:a11y": "cypress run --spec cypress/e2e/a11y/comentarios.a11y.cy.js",
-    "test:comments:performance": "cypress run --spec cypress/e2e/performance/comentarios.performance.cy.js"
+    "test:comments:performance": "cypress run --spec cypress/e2e/performance/comentarios.performance.cy.js",
+    "test:objects": "cypress run --spec cypress/e2e/api/objetos.api.cy.js,cypress/e2e/security/objetos.security.cy.js,cypress/e2e/regression/objetos.regression.cy.js,cypress/e2e/ui/objetos.ui.cy.js,cypress/e2e/a11y/objetos.a11y.cy.js,cypress/e2e/performance/objetos.performance.cy.js",
+    "test:objects:api": "cypress run --spec cypress/e2e/api/objetos.api.cy.js",
+    "test:objects:security": "cypress run --spec cypress/e2e/security/objetos.security.cy.js",
+    "test:objects:regression": "cypress run --spec cypress/e2e/regression/objetos.regression.cy.js",
+    "test:objects:ui": "cypress run --spec cypress/e2e/ui/objetos.ui.cy.js",
+    "test:objects:a11y": "cypress run --spec cypress/e2e/a11y/objetos.a11y.cy.js",
+    "test:objects:performance": "cypress run --spec cypress/e2e/performance/objetos.performance.cy.js"
   },
   "devDependencies": {
     "axe-core": "^4.12.1",

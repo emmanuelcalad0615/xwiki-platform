@@ -1,0 +1,15 @@
+{
+  "name": "vyv-objects-playwright",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Pruebas E2E con Playwright Test de la funcionalidad 'objects' (ObjectResourceImpl) contra el XWiki real de docker-compose.",
+  "scripts": {
+    "test": "playwright test",
+    "test:api": "playwright test objetos-api.spec.js",
+    "test:ui": "playwright test objetos-ui.spec.js",
+    "report": "playwright show-report"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.49.0"
+  }
+}

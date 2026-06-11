@@ -13,6 +13,8 @@ objeto de una página. Todo prueba la **clase REAL** del release publicado
 | **Unitarias** (TDD, AAA, FIRST, 5 dobles, Hamcrest) | `../vyv-rest/proyecto-modulo-real/.../objects/ObjectResourceImplTest.java` | `mvn test -f ../vyv-rest/proyecto-modulo-real/pom.xml -Dtest=ObjectResourceImplTest` |
 | **BDD** Gherkin (es) + Cucumber + Screenplay | `bdd/` | `mvn test -f bdd/pom.xml` |
 | **E2E + UX** (Cypress, API y UI reales) | `e2e/` | `npm install && npx cypress run` (XWiki arriba) |
+| **Cypress 6 categorías** (api, security, performance, a11y, ui, regression) en el proyecto COMPARTIDO del equipo | `../vyv-rest/cypress/cypress/e2e/<cat>/objetos.<cat>.cy.js` | `cd ../vyv-rest/cypress && npm run test:objects` |
+| **Playwright** (segundo motor E2E: API + UI) | `playwright/` | `cd playwright && npx playwright test` (XWiki arriba) |
 | **Katalon** (mismo ciclo E2E, keywords WS) | `e2e/katalon/ObjectsApiKatalon.groovy` | pegar en un Test Case de Katalon Studio (modo Script) |
 | **SonarQube** (cobertura solo de la clase) | `correr-objects.ps1 sonar` | worktree `xwiki-184` + Sonar local |
 | **Jenkins** (pipeline completo de objects) | `Jenkinsfile` | Job "Pipeline script from SCM" |
@@ -22,6 +24,28 @@ objeto de una página. Todo prueba la **clase REAL** del release publicado
 
 Detalle de diseño de las pruebas (caminos, dobles, TDD/BDD): **`PRUEBAS-OBJECTS.md`**.
 Mapa requisito→artefacto→evidencia de TODO lo pedido: **`CHECKLIST-CUMPLIMIENTO.md`**.
+
+## Correr TODA la batería del equipo en un comando
+
+Las specs de objetos viven también dentro del proyecto Cypress **compartido**
+(`../vyv-rest/cypress`), junto a las de etiquetas y comentarios, así que una sola
+corrida registra las tres funcionalidades. El orquestador del equipo lo automatiza:
+
+```powershell
+cd tests\vyv-rest
+.\correr-todo.ps1                 # unitarias (45) + BDD etiquetas + BDD objetos
+.\correr-todo.ps1 -e2e            # + Cypress compartido completo + Playwright (XWiki arriba)
+.\correr-todo.ps1 -e2e -ia        # + IA (DeepEval) — requiere $env:GROQ_API_KEY
+```
+
+> **Decisión de diseño (no se movió la carpeta).** En vez de mover físicamente
+> `vyv-objects/` dentro de `vyv-rest/` (riesgoso: los dos proyectos `bdd/` tienen
+> coordenadas Maven distintas, los dos proyectos Cypress usan convenciones de
+> variables distintas, y la unitaria de objetos ya vive en el módulo del equipo),
+> se **integraron las specs de objetos en el proyecto Cypress compartido** —
+> exactamente como el equipo hizo con comentarios. Resultado: un solo
+> `cypress run` (o `correr-todo.ps1 -e2e`) ejecuta y registra **las tres
+> funcionalidades juntas**, sin tocar nada del trabajo de los compañeros.
 
 ## Atajo: todo lo local en un comando
 
