@@ -61,14 +61,16 @@ pipeline {
             steps {
                 echo 'Preparando worktree del release que SI compila'
                 sh '''
+                    set -e
                     # Bajar el tag release si falta (master es SNAPSHOT, no resoluble)
                     if ! git tag --list "$XWIKI_TAG" | grep -q "$XWIKI_TAG"; then
                       git fetch --depth 1 https://github.com/xwiki/xwiki-platform.git "refs/tags/${XWIKI_TAG}:refs/tags/${XWIKI_TAG}"
                     fi
                     # Worktree limpio
-                    git worktree remove --force "$WORKTREE" || true
-                    git worktree prune || true
-                    rm -rf "$WORKTREE" || true
+                    git worktree remove --force "$WORKTREE" 2>/dev/null || true
+                    git worktree prune
+                    # Borrar como root via docker (los builds dejan archivos root-owned que jenkins no puede rm)
+                    docker exec -u 0 jenkins rm -rf "$WORKTREE" 2>/dev/null || rm -rf "$WORKTREE" || true
                     git worktree add -f "$WORKTREE" "$XWIKI_TAG"
                 '''
             }
