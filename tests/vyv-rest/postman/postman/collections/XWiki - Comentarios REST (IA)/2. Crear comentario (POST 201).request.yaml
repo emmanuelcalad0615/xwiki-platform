@@ -1,0 +1,29 @@
+$kind: http-request
+url: "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "text": "{{commentText}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set('commentText', 'postman-comment-' + Date.now());
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('status 201', () => pm.response.to.have.status(201));
+      const j = pm.response.json();
+      pm.test('devuelve el comentario creado con id', () => {
+        pm.expect(j).to.have.property('id');
+        pm.expect(j.text).to.eql(pm.collectionVariables.get('commentText'));
+        pm.expect(j.author).to.include(pm.collectionVariables.get('user'));
+      });
+      pm.collectionVariables.set('commentId', j.id);
+      console.log('commentId guardado =', j.id);
+    language: text/javascript
+order: 2000

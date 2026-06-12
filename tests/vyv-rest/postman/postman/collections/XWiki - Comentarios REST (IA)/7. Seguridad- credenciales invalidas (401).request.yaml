@@ -1,0 +1,28 @@
+$kind: http-request
+name: "7. Seguridad: credenciales invalidas (401)"
+url: "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "text": "no-deberia-crearse"
+    }
+auth:
+  type: basic
+  credentials:
+    username: "{{user}}"
+    password: password-incorrecto
+scripts:
+  - type: beforeRequest
+    code: |-
+      const base = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';
+      try { pm.cookies.jar().clear(base, function () {}); } catch (e) { console.log('jar clear:', e.message); }
+    language: text/javascript
+  - type: afterResponse
+    code: pm.test('status 401 con password incorrecto', () => pm.response.to.have.status(401));
+    language: text/javascript
+order: 7000

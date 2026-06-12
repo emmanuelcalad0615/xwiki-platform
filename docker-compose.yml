@@ -29,7 +29,7 @@ services:
       - DB_DATABASE=xwiki
       - DB_HOST=xwiki-db
       # Mas memoria para que la instalacion del flavor no tumbe el contenedor
-      - JAVA_OPTS=-Xmx2g -Xms512m -XX:+UseG1GC
+      - JAVA_OPTS=-Xmx3g -Xms1g -XX:+UseG1GC -XX:+ExitOnOutOfMemoryError
     volumes:
       - xwiki-data:/usr/local/xwiki
     restart: unless-stopped

@@ -1,0 +1,42 @@
+$kind: collection
+description: |-
+  Collection de pruebas del REST de Comentarios de XWiki (CommentsResourceImpl).
+
+  Generada con asistencia de IA. Espeja los casos de las pruebas unitarias y de los specs Cypress de la funcionalidad Comentarios.
+
+  ## Variables (Variables tab de la collection)
+  - baseUrl: http://localhost:8080
+  - wiki: xwiki
+  - space: Main
+  - page: WebHome
+  - user / pass: credenciales admin (emmanuel_calad / Joaco06151970_)
+  - commentId / commentText: se llenan en runtime por los scripts
+
+  ## Como correr
+  1. Importar este archivo en Postman.
+  2. (Opcional) Importar `xwiki-local.postman_environment.json` y seleccionarlo.
+  3. Run collection (Runner) o request por request. El orden importa: 'Crear' guarda commentId que usan 'Obtener por id'.
+
+  ## CLI (Newman)
+    npm i -g newman
+    newman run comentarios.postman_collection.json -e xwiki-local.postman_environment.json
+
+  ## IA dentro de Postman (Postbot)
+  Abre cualquier request -> Postbot (icono IA) -> pide: 'genera tests para validar el status y el schema de la respuesta', 'documenta esta request', o 'crea casos borde'. Postbot escribe los pm.test en la pestana Tests.
+variables:
+  baseUrl: http://localhost:8080
+  wiki: xwiki
+  space: Main
+  page: WebHome
+  user: emmanuel_calad
+  pass: Joaco06151970_
+  commentId: ""
+  commentText: ""
+  commentTextHl: ""
+auth:
+  - id: fd6abb7c-0035-4980-8f73-4a51e15c12b1
+    type: basic
+    name: basic auth
+    credentials:
+      username: "{{user}}"
+      password: "{{pass}}"

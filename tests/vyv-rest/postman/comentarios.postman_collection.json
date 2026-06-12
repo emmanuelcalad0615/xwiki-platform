@@ -1,0 +1,298 @@
+{
+  "info": {
+    "_postman_id": "a1c0mment-5e57-4b21-9f10-x w1k1c0mment",
+    "name": "XWiki - Comentarios REST (IA)",
+    "description": "Collection de pruebas del REST de Comentarios de XWiki (CommentsResourceImpl).\n\nGenerada con asistencia de IA. Espeja los casos de las pruebas unitarias y de los specs Cypress de la funcionalidad Comentarios.\n\n## Variables (Variables tab de la collection)\n- baseUrl: http://localhost:8080\n- wiki: xwiki\n- space: Main\n- page: WebHome\n- user / pass: credenciales admin (emmanuel_calad / Joaco06151970_)\n- commentId / commentText: se llenan en runtime por los scripts\n\n## Como correr\n1. Importar este archivo en Postman.\n2. (Opcional) Importar `xwiki-local.postman_environment.json` y seleccionarlo.\n3. Run collection (Runner) o request por request. El orden importa: 'Crear' guarda commentId que usan 'Obtener por id'.\n\n## CLI (Newman)\n  npm i -g newman\n  newman run comentarios.postman_collection.json -e xwiki-local.postman_environment.json\n\n## IA dentro de Postman (Postbot)\nAbre cualquier request -> Postbot (icono IA) -> pide: 'genera tests para validar el status y el schema de la respuesta', 'documenta esta request', o 'crea casos borde'. Postbot escribe los pm.test en la pestana Tests.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "basic",
+    "basic": [
+      { "key": "username", "value": "{{user}}", "type": "string" },
+      { "key": "password", "value": "{{pass}}", "type": "string" }
+    ]
+  },
+  "item": [
+    {
+      "name": "1. Listar comentarios (GET 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('body tiene array comments', () => {",
+              "  pm.expect(j).to.have.property('comments');",
+              "  pm.expect(j.comments).to.be.an('array');",
+              "});",
+              "pm.test('responde en menos de 3s', () => pm.expect(pm.response.responseTime).to.be.below(3000));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments" ]
+        }
+      }
+    },
+    {
+      "name": "2. Crear comentario (POST 201)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('commentText', 'postman-comment-' + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.test('devuelve el comentario creado con id', () => {",
+              "  pm.expect(j).to.have.property('id');",
+              "  pm.expect(j.text).to.eql(pm.collectionVariables.get('commentText'));",
+              "  pm.expect(j.author).to.include(pm.collectionVariables.get('user'));",
+              "});",
+              "pm.collectionVariables.set('commentId', j.id);",
+              "console.log('commentId guardado =', j.id);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"{{commentText}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments" ]
+        }
+      }
+    },
+    {
+      "name": "3. Obtener comentario por id (GET 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('el id coincide con el creado', () => {",
+              "  pm.expect(String(j.id)).to.eql(String(pm.collectionVariables.get('commentId')));",
+              "});",
+              "pm.test('el texto coincide con el creado', () => {",
+              "  pm.expect(j.text).to.eql(pm.collectionVariables.get('commentText'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments/{{commentId}}",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments", "{{commentId}}" ]
+        }
+      }
+    },
+    {
+      "name": "4. Crear comentario con highlight (POST 201)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('commentTextHl', 'postman-hl-' + Date.now());"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 201', () => pm.response.to.have.status(201));",
+              "const j = pm.response.json();",
+              "pm.test('el highlight se guarda', () => pm.expect(j.highlight).to.eql('fragmento-resaltado'));",
+              "pm.test('el texto se guarda', () => pm.expect(j.text).to.eql(pm.collectionVariables.get('commentTextHl')));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"highlight\": \"fragmento-resaltado\",\n  \"text\": \"{{commentTextHl}}\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments" ]
+        }
+      }
+    },
+    {
+      "name": "5. Listar y verificar que el comentario aparece (GET 200)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 200', () => pm.response.to.have.status(200));",
+              "const j = pm.response.json();",
+              "pm.test('la lista contiene el comentario creado', () => {",
+              "  const textos = j.comments.map(c => c.text);",
+              "  pm.expect(textos).to.include(pm.collectionVariables.get('commentText'));",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [ { "key": "Accept", "value": "application/json" } ],
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments" ]
+        }
+      }
+    },
+    {
+      "name": "6. Seguridad: crear sin autenticacion (401)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "// Postman/Newman reusa cookies entre requests: tras un POST autenticado",
+              "// queda el JSESSIONID y este request 'sin auth' seguiria logueado.",
+              "// Limpiamos la sesion para probar de verdad el acceso anonimo.",
+              "const base = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+              "try { pm.cookies.jar().clear(base, function () {}); } catch (e) { console.log('jar clear:', e.message); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 401 Unauthorized', () => pm.response.to.have.status(401));",
+              "pm.test('no se crea el comentario (sin id 2xx)', () => {",
+              "  pm.expect([200,201]).to.not.include(pm.response.code);",
+              "});"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": { "type": "noauth" },
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"no-deberia-crearse\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments" ]
+        }
+      }
+    },
+    {
+      "name": "7. Seguridad: credenciales invalidas (401)",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "const base = pm.collectionVariables.get('baseUrl') || 'http://localhost:8080';",
+              "try { pm.cookies.jar().clear(base, function () {}); } catch (e) { console.log('jar clear:', e.message); }"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('status 401 con password incorrecto', () => pm.response.to.have.status(401));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "basic",
+          "basic": [
+            { "key": "username", "value": "{{user}}", "type": "string" },
+            { "key": "password", "value": "password-incorrecto", "type": "string" }
+          ]
+        },
+        "method": "POST",
+        "header": [
+          { "key": "Accept", "value": "application/json" },
+          { "key": "Content-Type", "value": "application/json" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"text\": \"no-deberia-crearse\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments",
+          "host": [ "{{baseUrl}}" ],
+          "path": [ "rest", "wikis", "{{wiki}}", "spaces", "{{space}}", "pages", "{{page}}", "comments" ]
+        }
+      }
+    }
+  ],
+  "variable": [
+    { "key": "baseUrl", "value": "http://localhost:8080" },
+    { "key": "wiki", "value": "xwiki" },
+    { "key": "space", "value": "Main" },
+    { "key": "page", "value": "WebHome" },
+    { "key": "user", "value": "emmanuel_calad" },
+    { "key": "pass", "value": "Joaco06151970_" },
+    { "key": "commentId", "value": "" },
+    { "key": "commentText", "value": "" },
+    { "key": "commentTextHl", "value": "" }
+  ]
+}

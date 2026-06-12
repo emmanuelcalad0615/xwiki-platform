@@ -1,0 +1,14 @@
+name: XWiki Local
+values:
+  - key: baseUrl
+    value: 'http://localhost:8080'
+  - key: wiki
+    value: xwiki
+  - key: space
+    value: Main
+  - key: page
+    value: WebHome
+  - key: user
+    value: emmanuel_calad
+  - key: pass
+    value: Joaco06151970_

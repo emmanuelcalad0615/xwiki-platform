@@ -1,0 +1,25 @@
+$kind: http-request
+url: "{{baseUrl}}/rest/wikis/{{wiki}}/spaces/{{space}}/pages/{{page}}/comments"
+method: POST
+headers:
+  Accept: application/json
+  Content-Type: application/json
+body:
+  type: text
+  content: |-
+    {
+      "highlight": "fragmento-resaltado",
+      "text": "{{commentTextHl}}"
+    }
+scripts:
+  - type: beforeRequest
+    code: pm.collectionVariables.set('commentTextHl', 'postman-hl-' + Date.now());
+    language: text/javascript
+  - type: afterResponse
+    code: |-
+      pm.test('status 201', () => pm.response.to.have.status(201));
+      const j = pm.response.json();
+      pm.test('el highlight se guarda', () => pm.expect(j.highlight).to.eql('fragmento-resaltado'));
+      pm.test('el texto se guarda', () => pm.expect(j.text).to.eql(pm.collectionVariables.get('commentTextHl')));
+    language: text/javascript
+order: 4000

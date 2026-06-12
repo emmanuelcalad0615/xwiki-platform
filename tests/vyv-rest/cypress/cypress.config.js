@@ -8,7 +8,7 @@ module.exports = defineConfig({
     },
     env: {
       wiki: "xwiki",
-      space: "Main",
+      space: "Sandbox",
       page: "WebHome",
       adminUser: "emmanuel_calad",
       adminPass: "Joaco06151970_",
